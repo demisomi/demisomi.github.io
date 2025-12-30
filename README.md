@@ -5,7 +5,6 @@ A fully responsive, production-ready personal portfolio website showcasing my wo
 
 🔗 **Live Site:** [demisomi.github.io](https://demisomi.github.io)
 
-![Portfolio Preview](assets/images/profile.jpg)
 
 ---
 
