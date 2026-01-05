@@ -23,6 +23,7 @@ No frameworks. No dependencies. Just clean, hand-coded frontend.
 
 ```
 ├── index.html          # Main page
+├── project-prunedge.html # Project page
 ├── 404.html            # Custom error page
 ├── css/
 │   └── styles.css      # All styles
@@ -33,6 +34,7 @@ No frameworks. No dependencies. Just clean, hand-coded frontend.
     ├── Demilade_Somide_CV.pdf
     └── images/
         └── profile.jpg
+        └── prunedge-dashboard.jpg
 ```
 
 ---
