@@ -4,27 +4,29 @@
 const menuToggle = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('.nav-links');
 
-menuToggle.addEventListener('click', () => {
-    const isExpanded = navLinks.classList.toggle('active');
-    menuToggle.setAttribute('aria-expanded', isExpanded);
-});
-
-// Close menu when clicking a link
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+        const isExpanded = navLinks.classList.toggle('active');
+        menuToggle.setAttribute('aria-expanded', isExpanded);
     });
-});
 
-// Close menu with Escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navLinks.classList.contains('active')) {
-        navLinks.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
-        menuToggle.focus();
-    }
-});
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Close menu with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            menuToggle.focus();
+        }
+    });
+}
 
 // ===========================================
 // Scroll Animations (Intersection Observer)
@@ -84,3 +86,4 @@ if (prefersReducedMotion.matches) {
         el.classList.add('visible');
     });
 }
+
