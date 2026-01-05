@@ -183,6 +183,7 @@ nav {
     display: flex;
     gap: 1.5rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 /* ===========================================
@@ -608,6 +609,7 @@ section {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .project-tech span {
@@ -617,6 +619,22 @@ section {
     border-radius: 6px;
     font-size: 0.8rem;
     font-weight: 500;
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--cool-slate);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.project-link:hover {
+    color: var(--warm-coral);
+    gap: 0.5rem;
 }
 
 .project-visual {
