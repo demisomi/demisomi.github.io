@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PonziGuard — Analyst Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1628;
+    --ink-soft:#33415C;
+    --paper:#FAFBFC;
+    --paper-dim:#EEF1F5;
+    --line:#D8DEE6;
+    --teal:#0F766E;
+    --teal-soft:#E4F3F1;
+    --critical:#B91C1C;
+    --critical-soft:#FBE7E7;
+    --high:#D97706;
+    --high-soft:#FDF0DE;
+    --medium:#B45309;
+    --medium-soft:#FBEEDD;
+    --low:#16A34A;
+    --low-soft:#E6F6EC;
+    --mono:'JetBrains Mono', monospace;
+    --serif:'Fraunces', serif;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:28px;
+  }
+  .app{
+    max-width:1440px;
+    margin:0 auto;
+    background:var(--paper);
+    border-radius:6px;
+    overflow:hidden;
+    box-shadow:0 40px 80px rgba(0,0,0,0.45);
+  }
+
+  /* ===== Header ===== */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 32px;
+    background:var(--ink);
+    color:var(--paper);
+    border-bottom:3px solid var(--teal);
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-mark{
+    width:34px; height:34px;
+    border:2px solid var(--teal);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:600; font-size:16px;
+    color:var(--teal);
+    flex-shrink:0;
+  }
+  .brand-text h1{
+    font-family:var(--serif);
+    font-weight:500;
+    font-size:19px;
+    letter-spacing:0.2px;
+  }
+  .brand-text span{
+    display:block;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#9FB3C8;
+    margin-top:1px;
+  }
+  .header-meta{
+    display:flex; gap:28px; align-items:center;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:#B9C6D6;
+  }
+  .header-meta .dot{ color:var(--teal); }
+
+  /* ===== Layout ===== */
+  .workbench{
+    display:grid;
+    grid-template-columns:270px 1fr 340px;
+    min-height:720px;
+  }
+
+  /* ===== Case Queue (left) ===== */
+  .queue{
+    border-right:1px solid var(--line);
+    background:var(--paper-dim);
+    padding:20px 0;
+  }
+  .queue-label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:0 20px 14px;
+  }
+  .case-item{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:14px 20px;
+    border-left:3px solid transparent;
+    cursor:pointer;
+    border-bottom:1px solid var(--line);
+    transition:background 0.15s ease;
+  }
+  .case-item:hover{ background:#E4E9EF; }
+  .case-item.active{
+    background:var(--paper);
+    border-left:3px solid var(--teal);
+  }
+  .case-item .case-id{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--ink-soft);
+  }
+  .case-item .case-snippet{
+    font-size:12.5px;
+    line-height:1.4;
+    color:var(--ink);
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .case-item .case-badge{
+    align-self:flex-start;
+    font-family:var(--mono);
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    padding:2px 7px;
+    border-radius:3px;
+    margin-top:2px;
+  }
+  .badge-CRITICAL{ background:var(--critical-soft); color:var(--critical); }
+  .badge-HIGH{ background:var(--high-soft); color:var(--high); }
+  .badge-MEDIUM{ background:var(--medium-soft); color:var(--medium); }
+  .badge-LOW{ background:var(--low-soft); color:var(--low); }
+  .badge-SCOPE{ background:#E8EAED; color:var(--ink-soft); }
+
+  /* ===== Center: Exhibit + Pipeline ===== */
+  .exhibit-col{
+    padding:28px 32px;
+    border-right:1px solid var(--line);
+    overflow-y:auto;
+  }
+  .exhibit-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:4px;
+  }
+  .exhibit-title{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--teal);
+    font-weight:600;
+  }
+  .exhibit-id{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .exhibit-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid var(--teal);
+    border-radius:4px;
+    padding:22px 24px;
+    margin:14px 0 26px;
+    font-size:15px;
+    line-height:1.75;
+    color:var(--ink);
+  }
+  .exhibit-meta-row{
+    display:flex;
+    gap:18px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .tag{
+    background:var(--teal-soft);
+    color:var(--teal);
+    border-bottom:1.5px solid var(--teal);
+    padding:0 2px;
+    cursor:pointer;
+    font-weight:500;
+    transition:background 0.15s ease, color 0.15s ease;
+    position:relative;
+  }
+  .tag:hover, .tag.hot{ background:var(--teal); color:#fff; }
+  .tag sup{
+    font-family:var(--mono);
+    font-size:9px;
+    font-weight:700;
+    margin-left:1px;
+  }
+
+  .pipeline{
+    margin-top:6px;
+  }
+  .pipeline-title{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .stage{
+    display:grid;
+    grid-template-columns:26px 1fr auto;
+    gap:14px;
+    align-items:start;
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .stage:last-child{ border-bottom:none; }
+  .stage-dot{
+    width:26px; height:26px;
+    border-radius:50%;
+    background:var(--ink);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:700;
+    margin-top:2px;
+  }
+  .stage-dot.pass{ background:var(--low); }
+  .stage-dot.dismiss{ background:var(--ink-soft); }
+  .stage-dot.flag{ background:var(--critical); }
+  .stage-body h4{
+    font-size:13.5px;
+    font-weight:600;
+    margin-bottom:3px;
+  }
+  .stage-body p{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .stage-value{
+    font-family:var(--mono);
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink);
+    white-space:nowrap;
+    text-align:right;
+  }
+  .stage-value small{
+    display:block;
+    font-size:9.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-top:2px;
+  }
+
+  /* ===== Right: Docket ===== */
+  .docket-col{
+    padding:28px 26px;
+    background:var(--paper-dim);
+    overflow-y:auto;
+  }
+  .docket-title{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .ledger{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+  .ledger-row{
+    display:grid;
+    grid-template-columns:28px 1fr 34px;
+    gap:10px;
+    align-items:center;
+    padding:11px 14px;
+    border-bottom:1px solid var(--line);
+    transition:background 0.15s ease;
+  }
+  .ledger-row:last-child{ border-bottom:none; }
+  .ledger-row.hot{ background:var(--teal-soft); }
+  .ledger-num{
+    font-family:var(--mono);
+    font-size:11px;
+    font-weight:700;
+    color:var(--teal);
+  }
+  .ledger-cat{ font-size:12px; font-weight:600; color:var(--ink); }
+  .ledger-cat small{
+    display:block;
+    font-family:var(--mono);
+    font-size:9.5px;
+    font-weight:400;
+    color:var(--ink-soft);
+    margin-top:1px;
+    text-transform:none;
+  }
+  .ledger-weight{
+    font-family:var(--mono);
+    font-size:13px;
+    font-weight:700;
+    text-align:right;
+    color:var(--ink);
+  }
+  .ledger-empty{
+    padding:20px 14px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    line-height:1.5;
+  }
+
+  .tally{
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:4px;
+    padding:18px 20px;
+    margin-bottom:20px;
+  }
+  .tally-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:var(--mono);
+    font-size:12px;
+    color:#B9C6D6;
+    padding:4px 0;
+  }
+  .tally-row.total{
+    border-top:1px solid rgba(255,255,255,0.15);
+    margin-top:8px;
+    padding-top:10px;
+    font-size:14px;
+    font-weight:700;
+    color:#fff;
+  }
+  .tally-row.total span:last-child{ font-size:22px; }
+
+  .verdict-box{
+    border-radius:4px;
+    padding:18px 20px;
+    margin-bottom:20px;
+    border:1.5px solid transparent;
+  }
+  .verdict-label{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    opacity:0.75;
+    margin-bottom:4px;
+  }
+  .verdict-value{
+    font-family:var(--serif);
+    font-size:22px;
+    font-weight:600;
+  }
+  .verdict-sub{
+    font-size:12px;
+    margin-top:8px;
+    line-height:1.5;
+  }
+  .v-CRITICAL{ background:var(--critical-soft); color:var(--critical); border-color:#F0BABA; }
+  .v-HIGH{ background:var(--high-soft); color:var(--high); border-color:#F3D6A6; }
+  .v-MEDIUM{ background:var(--medium-soft); color:var(--medium); border-color:#F3D6A6; }
+  .v-LOW{ background:var(--low-soft); color:var(--low); border-color:#B7E4C7; }
+  .v-SCOPE{ background:#E8EAED; color:var(--ink-soft); border-color:var(--line); }
+
+  .threshold-table{
+    font-family:var(--mono);
+    font-size:10.5px;
+  }
+  .threshold-table .t-title{
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+    font-size:10.5px;
+  }
+  .t-row{
+    display:grid;
+    grid-template-columns:20px 1fr auto;
+    gap:8px;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+    color:var(--ink-soft);
+  }
+  .t-row.current{
+    color:var(--ink);
+    font-weight:700;
+  }
+  .t-row.current .t-mark{ color:var(--teal); }
+
+  @media (max-width: 1100px){
+    .workbench{ grid-template-columns:1fr; }
+    .queue{ display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid var(--line); }
+    .case-item{ min-width:220px; border-bottom:none; border-left:none; border-right:1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark">PG</div>
+      <div class="brand-text">
+        <h1>PonziGuard</h1>
+        <span>Analyst Workbench</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span>Held-out F1 <span class="dot">·</span> 97.96%</span>
+      <span id="clock">—</span>
+      <a href="../project-ponziguard.html" style="color:#fff; text-decoration:none; border:1px solid var(--teal); padding:5px 10px; border-radius:4px;">← Case study</a>
+    </div>
+  </header>
+
+  <div class="workbench">
+
+    <!-- LEFT: CASE QUEUE -->
+    <div class="queue" id="queue">
+      <div class="queue-label">Case queue · 4 flagged</div>
+      <!-- case items injected by JS -->
+    </div>
+
+    <!-- CENTER: EXHIBIT + PIPELINE -->
+    <div class="exhibit-col">
+      <div class="exhibit-header">
+        <span class="exhibit-title">Exhibit A — Original Message</span>
+        <span class="exhibit-id" id="case-id-label">CASE-0001</span>
+      </div>
+      <div class="exhibit-meta-row" id="exhibit-meta"></div>
+      <div class="exhibit-card" id="exhibit-text"></div>
+
+      <div class="pipeline">
+        <div class="pipeline-title">Cascade trace</div>
+        <div id="pipeline-stages"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DOCKET -->
+    <div class="docket-col">
+      <div class="verdict-box" id="verdict-box">
+        <div class="verdict-label">Final verdict</div>
+        <div class="verdict-value" id="verdict-value">—</div>
+        <div class="verdict-sub" id="verdict-sub"></div>
+      </div>
+
+      <div class="docket-title">Evidence docket</div>
+      <div class="ledger" id="ledger"></div>
+
+      <div class="tally" id="tally"></div>
+
+      <div class="threshold-table" id="threshold-table"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+
+const CASES = [
+  {
+    id: "CASE-0412",
+    lang: "English",
+    snippet: "CBEX is back! Deposit 100,000 naira and earn 20% daily guaranteed profit...",
+    text: "CBEX is back! Deposit 100,000 naira and earn 20% daily guaranteed profit. Our AI trading bot pays you 20k every day for 30 days, 100% risk-free. Refer your friends and earn 10% referral commission on every signup. MMM-style binary plan, slots filling fast — join now before we close registration!",
+    stage1: { score: 0.94, verdict: "pass" },
+    stage2: { score: 0.992, verdict: "flag" },
+    stage25: { score: null, dismissed: false },
+    evidence: [
+      { span: "CBEX is back", category: "Known Schemes", weight: 5 },
+      { span: "20% daily guaranteed profit", category: "Guaranteed Returns", weight: 5 },
+      { span: "pays you 20k every day for 30 days", category: "Daily Profit Claims", weight: 5 },
+      { span: "100% risk-free", category: "Unrealistic ROI", weight: 5 },
+      { span: "Refer your friends and earn 10% referral commission", category: "Recruitment Incentives", weight: 5 },
+      { span: "slots filling fast", category: "Urgency", weight: 2 }
+    ],
+    threshold: 27
+  },
+  {
+    id: "CASE-0388",
+    lang: "Pidgin",
+    snippet: "Oga make you join dis investment wey dey pay double money for one week...",
+    text: "Oga make you join dis investment wey dey pay double money for one week, no wahala at all. E don already pay plenty people wey dey testify for group.",
+    stage1: { score: 0.71, verdict: "pass" },
+    stage2: { score: 0.86, verdict: "flag" },
+    stage25: { score: null, dismissed: false },
+    evidence: [
+      { span: "no wahala at all", category: "Social Proof", weight: 1 }
+    ],
+    threshold: 1,
+    note: "Stage 2 assigns high Ponzi probability (0.86) on semantic grounds, but Stage 3's rule set is English-anchored and matches almost nothing in this phrasing. This is the known Pidgin gap: recall drops to 16.67% at this stage even though Stage 2 alone hits 100% recall on Pidgin. Recommendation 5.3.3 — a neural marker reasoner — targets exactly this mismatch."
+  },
+  {
+    id: "CASE-0201",
+    lang: "English",
+    snippet: "Your OTP for the NGN 45,000 transfer is 883021. Do not share this code...",
+    text: "Your OTP for the NGN 45,000 transfer is 883021. Do not share this code with anyone. — GTBank",
+    stage1: { score: 0.18, verdict: "pass" },
+    stage2: { score: null, verdict: "skipped" },
+    stage25: { score: 0.04, dismissed: true },
+    evidence: [],
+    threshold: 0,
+    outOfScope: true,
+    note: "Stage 2.5's investment-context filter dismisses this before it ever reaches the rule engine — the message contains no investment framing at all. This mirrors the consumer app's gibberish/off-topic handling: a low score here means 'outside scope,' not 'confirmed safe.'"
+  },
+  {
+    id: "CASE-0297",
+    lang: "English",
+    snippet: "Unregulated forex trading bot guarantees 15% weekly returns, limited slots...",
+    text: "Unregulated forex trading bot guarantees 15% weekly returns, limited slots, act fast before the window closes. Tiered entry packages available from ₦20,000.",
+    stage1: { score: 0.83, verdict: "pass" },
+    stage2: { score: 0.91, verdict: "flag" },
+    stage25: { score: null, dismissed: false },
+    evidence: [
+      { span: "guarantees 15% weekly returns", category: "Guaranteed Returns", weight: 5 },
+      { span: "Unregulated forex trading bot", category: "Unregulated Crypto/Forex", weight: 2 },
+      { span: "Tiered entry packages", category: "Tiered Packages", weight: 4 },
+      { span: "act fast before the window closes", category: "Urgency", weight: 2 }
+    ],
+    threshold: 13
+  }
+];
+
+const THRESHOLDS = [
+  { t:0, use:"Regulator screening", pr:"63.83% / 100%" },
+  { t:1, use:"F1-optimal / research", pr:"82.14% / 76.67%" },
+  { t:3, use:"Default (dashboard)", pr:"90.48% / 63.33%" },
+  { t:4, use:"Consumer alerts", pr:"93.75% / 50%" },
+  { t:7, use:"Court / prosecution", pr:"100% / 16.67%" }
+];
+
+function riskLevel(score, outOfScope){
+  if(outOfScope) return "SCOPE";
+  if(score >= 15) return "CRITICAL";
+  if(score >= 10) return "HIGH";
+  if(score >= 5) return "MEDIUM";
+  return "LOW";
+}
+
+/* ================= RENDER ================= */
+
+let activeIndex = 0;
+let hotIndex = null;
+
+function renderQueue(){
+  const q = document.getElementById("queue");
+  q.querySelectorAll(".case-item").forEach(el => el.remove());
+  CASES.forEach((c, i) => {
+    const level = riskLevel(c.threshold, c.outOfScope);
+    const el = document.createElement("div");
+    el.className = "case-item" + (i === activeIndex ? " active" : "");
+    el.innerHTML = `
+      <span class="case-id">${c.id} · ${c.lang}</span>
+      <span class="case-snippet">${c.snippet}</span>
+      <span class="case-badge badge-${level}">${level === "SCOPE" ? "OUT OF SCOPE" : level}</span>
+    `;
+    el.addEventListener("click", () => { activeIndex = i; renderAll(); });
+    q.appendChild(el);
+  });
+}
+
+function highlightText(c){
+  if(c.evidence.length === 0) return c.text;
+  let text = c.text;
+  let spans = [];
+  c.evidence.forEach((e, i) => {
+    const idx = text.indexOf(e.span);
+    if(idx !== -1) spans.push({ idx, len: e.span.length, i });
+  });
+  spans.sort((a,b) => a.idx - b.idx);
+  let out = "";
+  let cursor = 0;
+  spans.forEach(s => {
+    out += escapeHtml(text.slice(cursor, s.idx));
+    const raw = text.slice(s.idx, s.idx + s.len);
+    out += `<span class="tag" data-i="${s.i}" onmouseenter="setHot(${s.i})" onmouseleave="setHot(null)">${escapeHtml(raw)}<sup>${s.i+1}</sup></span>`;
+    cursor = s.idx + s.len;
+  });
+  out += escapeHtml(text.slice(cursor));
+  return out;
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function setHot(i){
+  hotIndex = i;
+  document.querySelectorAll(".tag").forEach(t => {
+    t.classList.toggle("hot", Number(t.dataset.i) === i);
+  });
+  document.querySelectorAll(".ledger-row").forEach(r => {
+    r.classList.toggle("hot", Number(r.dataset.i) === i);
+  });
+}
+window.setHot = setHot;
+
+function renderExhibit(c){
+  document.getElementById("case-id-label").textContent = c.id;
+  document.getElementById("exhibit-meta").innerHTML = `
+    <span>Language: ${c.lang}</span>
+    <span>Length: ${c.text.split(" ").length} words</span>
+    <span>Source: social platform report</span>
+  `;
+  document.getElementById("exhibit-text").innerHTML = highlightText(c);
+}
+
+function renderPipeline(c){
+  const el = document.getElementById("pipeline-stages");
+  const rows = [];
+
+  rows.push(`
+    <div class="stage">
+      <div class="stage-dot ${c.stage1.verdict === 'pass' ? 'pass' : 'flag'}">1</div>
+      <div class="stage-body">
+        <h4>Stage 1 — Heuristic pre-filter</h4>
+        <p>Lightweight keyword/embedding pass. Recall-optimized (98.14%) to avoid dropping true positives before the classifier sees them.</p>
+      </div>
+      <div class="stage-value">${c.stage1.score.toFixed(2)}<small>${c.stage1.verdict === 'pass' ? 'forwarded' : 'flagged'}</small></div>
+    </div>
+  `);
+
+  if(c.stage2.verdict === "skipped"){
+    rows.push(`
+      <div class="stage">
+        <div class="stage-dot dismiss">2</div>
+        <div class="stage-body">
+          <h4>Stage 2 — XLM-RoBERTa classifier</h4>
+          <p>Not reached — dismissed at Stage 2.5 before classification.</p>
+        </div>
+        <div class="stage-value">—<small>skipped</small></div>
+      </div>
+    `);
+  } else {
+    rows.push(`
+      <div class="stage">
+        <div class="stage-dot ${c.stage2.score >= 0.5 ? 'flag' : 'pass'}">2</div>
+        <div class="stage-body">
+          <h4>Stage 2 — XLM-RoBERTa classifier</h4>
+          <p>Fine-tuned transformer probability that the message describes a Ponzi-type scheme.</p>
+        </div>
+        <div class="stage-value">${c.stage2.score.toFixed(3)}<small>Ponzi probability</small></div>
+      </div>
+    `);
+  }
+
+  rows.push(`
+    <div class="stage">
+      <div class="stage-dot ${c.stage25.dismissed ? 'dismiss' : 'pass'}">2.5</div>
+      <div class="stage-body">
+        <h4>Stage 2.5 — Investment-context filter</h4>
+        <p>${c.stage25.dismissed ? 'Dismissed as non-investment fraud (phishing, lottery, generic scam). This is the sub-filter that keeps the system Ponzi-specialized — it drops 47.3% of Stage-2 positives in evaluation.' : 'Passed — message contains investment framing, forwarded to the rule engine.'}</p>
+      </div>
+      <div class="stage-value">${c.stage25.dismissed ? 'dismissed' : 'passed'}<small>Stage 2.5</small></div>
+    </div>
+  `);
+
+  rows.push(`
+    <div class="stage">
+      <div class="stage-dot ${c.outOfScope ? 'dismiss' : (c.threshold >= 15 ? 'flag' : 'pass')}">3</div>
+      <div class="stage-body">
+        <h4>Stage 3 — Weighted rule engine</h4>
+        <p>${c.evidence.length} rule ${c.evidence.length === 1 ? 'match' : 'matches'} across 12 categories, weighted 1–5. See docket for full breakdown.</p>
+      </div>
+      <div class="stage-value">${c.outOfScope ? '—' : c.threshold}<small>weighted score</small></div>
+    </div>
+  `);
+
+  el.innerHTML = rows.join("");
+}
+
+function renderDocket(c){
+  const ledger = document.getElementById("ledger");
+  if(c.evidence.length === 0){
+    ledger.innerHTML = `<div class="ledger-empty">No rule categories triggered. ${c.outOfScope ? 'Message fell outside investment scope at Stage 2.5.' : 'Score below reporting threshold.'}</div>`;
+  } else {
+    ledger.innerHTML = c.evidence.map((e,i) => `
+      <div class="ledger-row" data-i="${i}" onmouseenter="setHot(${i})" onmouseleave="setHot(null)">
+        <div class="ledger-num">E${i+1}</div>
+        <div class="ledger-cat">${e.category}<small>weight ${e.weight}</small></div>
+        <div class="ledger-weight">+${e.weight}</div>
+      </div>
+    `).join("");
+  }
+
+  const tally = document.getElementById("tally");
+  tally.innerHTML = `
+    <div class="tally-row"><span>Rule matches</span><span>${c.evidence.length}</span></div>
+    <div class="tally-row"><span>Highest single weight</span><span>${c.evidence.length ? Math.max(...c.evidence.map(e=>e.weight)) : '—'}</span></div>
+    <div class="tally-row total"><span>Weighted total</span><span>${c.outOfScope ? '—' : c.threshold}</span></div>
+  `;
+
+  const level = riskLevel(c.threshold, c.outOfScope);
+  const vBox = document.getElementById("verdict-box");
+  vBox.className = "verdict-box v-" + level;
+  document.getElementById("verdict-value").textContent = level === "SCOPE" ? "Outside scope" : level;
+  document.getElementById("verdict-sub").textContent = c.note ||
+    (level === "CRITICAL" ? "Meets threshold for immediate escalation and public warning." :
+     level === "HIGH" ? "Meets threshold for analyst review within 24 hours." :
+     level === "MEDIUM" ? "Logged for pattern tracking; no immediate action." :
+     "No credible Ponzi indicators found.");
+
+  const tt = document.getElementById("threshold-table");
+  tt.innerHTML = `<div class="t-title">Deployment threshold reference</div>` +
+    THRESHOLDS.map(t => {
+      const current = !c.outOfScope && c.threshold >= t.t && (THRESHOLDS.find(x => x.t > t.t && c.threshold >= x.t) === undefined);
+      return `
+        <div class="t-row ${current ? 'current' : ''}">
+          <span class="t-mark">${current ? '●' : '·'}</span>
+          <span>τ=${t.t} ${t.use}</span>
+          <span>${t.pr}</span>
+        </div>
+      `;
+    }).join("");
+}
+
+function renderAll(){
+  renderQueue();
+  const c = CASES[activeIndex];
+  renderExhibit(c);
+  renderPipeline(c);
+  renderDocket(c);
+}
+
+function tickClock(){
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toISOString().replace("T"," ").slice(0,19) + " UTC";
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+renderAll();
+</script>
+
+</body>
+</html>

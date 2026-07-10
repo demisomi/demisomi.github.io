@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PonziGuard — Check a Message</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1628;
+    --ink-soft:#33415C;
+    --paper:#FAFBFC;
+    --paper-dim:#EEF1F5;
+    --line:#D8DEE6;
+    --teal:#0F766E;
+    --teal-soft:#E4F3F1;
+    --critical:#B91C1C;
+    --critical-soft:#FBE7E7;
+    --high:#D97706;
+    --high-soft:#FDF0DE;
+    --medium:#B45309;
+    --medium-soft:#FBEEDD;
+    --low:#16A34A;
+    --low-soft:#E6F6EC;
+    --mono:'JetBrains Mono', monospace;
+    --serif:'Fraunces', serif;
+    --sans:'Inter', sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px;
+  }
+
+  .phone{
+    width:390px;
+    max-width:100%;
+    background:var(--paper);
+    border-radius:36px;
+    border:10px solid var(--ink);
+    box-shadow:0 40px 90px rgba(0,0,0,0.5);
+    overflow:hidden;
+    position:relative;
+  }
+  .notch{
+    position:absolute;
+    top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:22px;
+    background:var(--ink);
+    border-radius:0 0 14px 14px;
+    z-index:5;
+  }
+
+  .app-header{
+    background:var(--ink);
+    color:var(--paper);
+    padding:34px 22px 18px;
+    text-align:center;
+  }
+  .app-mark{
+    width:40px; height:40px;
+    border:2px solid var(--teal);
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:600; font-size:17px;
+    color:var(--teal);
+    margin:0 auto 10px;
+  }
+  .app-header h1{ font-family:var(--serif); font-size:19px; font-weight:600; }
+  .app-header p{ font-family:var(--mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:#9FB3C8; margin-top:3px; }
+
+  .body-scroll{
+    padding:20px 20px 26px;
+    min-height:520px;
+  }
+
+  .examples{
+    display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:2px;
+  }
+  .example-chip{
+    flex-shrink:0;
+    font-family:var(--mono); font-size:10.5px; font-weight:600;
+    background:#fff; border:1px solid var(--line); color:var(--ink-soft);
+    padding:7px 12px; border-radius:16px; cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .example-chip:hover{ border-color:var(--teal); color:var(--teal); }
+
+  textarea{
+    width:100%;
+    min-height:120px;
+    resize:none;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    font-family:var(--sans);
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink);
+    background:#fff;
+  }
+  textarea:focus{ outline:none; border-color:var(--teal); }
+
+  .meta-row{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:8px; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);
+  }
+
+  .check-btn{
+    width:100%;
+    margin-top:14px;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:background 0.15s ease;
+  }
+  .check-btn:hover{ background:#0C5F58; }
+  .check-btn:active{ transform:translateY(1px); }
+
+  .spinner{
+    width:16px; height:16px;
+    border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:none;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .result{
+    margin-top:20px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1.5px solid var(--line);
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity 0.35s ease, transform 0.35s ease;
+  }
+  .result.show{ opacity:1; transform:translateY(0); }
+
+  .result-head{
+    padding:16px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .result-verdict{ font-family:var(--serif); font-size:19px; font-weight:600; }
+  .result-lang{
+    font-family:var(--mono); font-size:9.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.05em;
+    background:rgba(255,255,255,0.5); padding:3px 8px; border-radius:4px;
+  }
+
+  .v-CRITICAL .result-head{ background:var(--critical-soft); color:var(--critical); }
+  .v-HIGH .result-head{ background:var(--high-soft); color:var(--high); }
+  .v-MEDIUM .result-head{ background:var(--medium-soft); color:var(--medium); }
+  .v-LOW .result-head{ background:var(--low-soft); color:var(--low); }
+  .v-SCOPE .result-head{ background:#E8EAED; color:var(--ink-soft); }
+
+  .result-body{
+    background:#fff;
+    padding:16px 18px 18px;
+  }
+  .result-explain{
+    font-size:12.5px; line-height:1.55; color:var(--ink-soft); margin-bottom:14px;
+  }
+  .rule-list{ display:flex; flex-direction:column; gap:6px; }
+  .rule-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11.5px;
+    background:var(--paper-dim);
+    padding:8px 10px;
+    border-radius:6px;
+  }
+  .rule-row b{ font-family:var(--mono); color:var(--ink); }
+
+  .streak{
+    margin-top:16px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:var(--mono); font-size:10.5px; color:var(--ink-soft);
+    border-top:1px dashed var(--line); padding-top:12px;
+  }
+  .streak b{ color:var(--teal); }
+
+  .footer-links{
+    text-align:center;
+    padding:14px 20px 22px;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--ink-soft);
+    background:var(--paper-dim);
+    border-top:1px solid var(--line);
+  }
+  .footer-links a{ color:var(--teal); text-decoration:none; }
+
+  kbd{
+    font-family:var(--mono); font-size:9.5px;
+    background:#E8EAED; border:1px solid var(--line);
+    padding:1px 5px; border-radius:3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="app-header">
+    <div class="app-mark">PG</div>
+    <h1>PonziGuard</h1>
+    <p>Check a message</p>
+  </div>
+
+  <div class="body-scroll">
+    <div class="examples" id="examples"></div>
+
+    <textarea id="input" placeholder="Paste a message you received — an investment offer, a chain forward, anything that felt off." maxlength="600"></textarea>
+    <div class="meta-row">
+      <span id="charcount">0 / 600</span>
+      <span>⌘⏎ to check</span>
+    </div>
+
+    <button class="check-btn" id="checkBtn">
+      <span id="btnLabel">Check this message</span>
+      <span class="spinner" id="spinner"></span>
+    </button>
+
+    <div class="result" id="result">
+      <div class="result-head">
+        <span class="result-verdict" id="verdictText">—</span>
+        <span class="result-lang" id="langBadge">—</span>
+      </div>
+      <div class="result-body">
+        <p class="result-explain" id="explainText"></p>
+        <div class="rule-list" id="ruleList"></div>
+      </div>
+    </div>
+
+    <div class="streak" id="streakBox" style="display:none;">
+      <span>Messages checked this session</span>
+      <b id="streakCount">0</b>
+    </div>
+  </div>
+
+  <div class="footer-links">
+    Prototype implementation for a final-year thesis · <a href="analyst.html">Analyst view</a> · <a href="regulator.html">Regulator view</a>
+  </div>
+</div>
+
+<script>
+const EXAMPLES = [
+  {
+    label: "CBEX-style",
+    text: "CBEX is back! Deposit 100,000 naira and earn 20% daily guaranteed profit. Our AI trading bot pays you 20k every day for 30 days, 100% risk-free. Refer your friends and earn 10% referral commission on every signup. MMM-style binary plan, slots filling fast — join now before we close registration!",
+    lang: "EN",
+    verdict: "CRITICAL",
+    score: 27,
+    explain: "This message matches six high-weight rule categories, including a known scheme name and guaranteed daily returns — the strongest combination of signals the system checks for.",
+    rules: [
+      { cat: "Known Schemes", w: 5 },
+      { cat: "Guaranteed Returns", w: 5 },
+      { cat: "Daily Profit Claims", w: 5 },
+      { cat: "Recruitment Incentives", w: 5 },
+      { cat: "Urgency", w: 2 }
+    ]
+  },
+  {
+    label: "Pidgin (edge case)",
+    text: "Oga make you join dis investment wey dey pay double money for one week, no wahala at all. E don already pay plenty people wey dey testify for group.",
+    lang: "PCM",
+    verdict: "MEDIUM",
+    score: 6,
+    explain: "The classifier flags this as likely Ponzi content on semantic grounds, but the rule engine — which is English-anchored — only catches one weak signal. This is a known limitation being addressed in future work.",
+    rules: [
+      { cat: "Social Proof", w: 1 }
+    ]
+  },
+  {
+    label: "Bank OTP",
+    text: "Your OTP for the NGN 45,000 transfer is 883021. Do not share this code with anyone. — GTBank",
+    lang: "EN",
+    verdict: "SCOPE",
+    score: 0,
+    explain: "This message contains no investment framing at all, so it's dismissed before reaching the rule engine. Outside scope doesn't mean safe — it means this tool isn't the right check for this message.",
+    rules: []
+  },
+  {
+    label: "Crypto/Forex",
+    text: "Unregulated forex trading bot guarantees 15% weekly returns, limited slots, act fast before the window closes. Tiered entry packages available from ₦20,000.",
+    lang: "EN",
+    verdict: "HIGH",
+    score: 13,
+    explain: "Guaranteed weekly returns combined with tiered entry packages and urgency language is a strong Ponzi pattern, just under the critical threshold.",
+    rules: [
+      { cat: "Guaranteed Returns", w: 5 },
+      { cat: "Tiered Packages", w: 4 },
+      { cat: "Unregulated Crypto/Forex", w: 2 },
+      { cat: "Urgency", w: 2 }
+    ]
+  }
+];
+
+let streakCount = 0;
+
+function renderExamples(){
+  const el = document.getElementById("examples");
+  el.innerHTML = EXAMPLES.map((e,i) => `<div class="example-chip" data-i="${i}">${e.label}</div>`).join("");
+  el.querySelectorAll(".example-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const ex = EXAMPLES[Number(chip.dataset.i)];
+      document.getElementById("input").value = ex.text;
+      updateCharCount();
+      runCheck(ex);
+    });
+  });
+}
+
+function updateCharCount(){
+  const len = document.getElementById("input").value.length;
+  document.getElementById("charcount").textContent = `${len} / 600`;
+}
+
+function findMatch(text){
+  const hit = EXAMPLES.find(e => e.text === text);
+  if(hit) return hit;
+  // Fallback heuristic for free-typed text: not a real model, just a demo default
+  return {
+    lang: "EN", verdict: "LOW", score: 2,
+    explain: "No strong Ponzi-pattern rules matched this text in the demo. The deployed model would run the full three-stage cascade on real input.",
+    rules: []
+  };
+}
+
+function runCheck(forcedExample){
+  const text = document.getElementById("input").value.trim();
+  if(!text) return;
+  const btn = document.getElementById("checkBtn");
+  const spinner = document.getElementById("spinner");
+  const label = document.getElementById("btnLabel");
+  const result = document.getElementById("result");
+
+  spinner.style.display = "inline-block";
+  label.textContent = "Running cascade…";
+  result.classList.remove("show");
+
+  setTimeout(() => {
+    const match = forcedExample || findMatch(text);
+    spinner.style.display = "none";
+    label.textContent = "Check this message";
+
+    result.className = "result v-" + match.verdict;
+    document.getElementById("verdictText").textContent =
+      match.verdict === "SCOPE" ? "Outside scope" : match.verdict;
+    document.getElementById("langBadge").textContent = match.lang;
+    document.getElementById("explainText").textContent = match.explain;
+    document.getElementById("ruleList").innerHTML = match.rules.length
+      ? match.rules.map(r => `<div class="rule-row"><span>${r.cat}</span><b>+${r.w}</b></div>`).join("")
+      : `<div class="rule-row"><span>No rule categories triggered</span><b>—</b></div>`;
+
+    requestAnimationFrame(() => result.classList.add("show"));
+
+    streakCount++;
+    document.getElementById("streakBox").style.display = "flex";
+    document.getElementById("streakCount").textContent = streakCount;
+  }, 650);
+}
+
+document.getElementById("input").addEventListener("input", updateCharCount);
+document.getElementById("checkBtn").addEventListener("click", () => runCheck());
+document.addEventListener("keydown", (e) => {
+  if((e.metaKey || e.ctrlKey) && e.key === "Enter") runCheck();
+});
+
+renderExamples();
+</script>
+
+</body>
+</html>
