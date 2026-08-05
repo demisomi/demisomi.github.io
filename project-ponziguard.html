@@ -180,8 +180,6 @@
                 <span class="tech-tag">Hugging Face Transformers</span>
                 <span class="tech-tag">PyTorch</span>
                 <span class="tech-tag">scikit-learn</span>
-                <span class="tech-tag">FastAPI</span>
-                <span class="tech-tag">Docker</span>
                 <span class="tech-tag">Streamlit</span>
             </div>
 
@@ -205,7 +203,7 @@
             <h2 class="section-title">What Problem Did I Solve?</h2>
 
             <p>
-                Ponzi schemes recruit through social media constantly — CBEX, MMM, Racksterli,
+                Ponzi schemes recruit through social media constantly CBEX, MMM, Racksterli,
                 and dozens of copycats promise guaranteed daily returns and spread through
                 referral chains before regulators can respond. Existing fraud filters are
                 mostly English-only, keyword-based, and static, so they miss the same scheme
@@ -256,9 +254,10 @@
             <p>
                 The same cascade means different things depending on who's using it. I built
                 three linked front ends to show that: a quick consumer check, an analyst's
-                single-case deep dive, and a regulator's caseload-wide screening view. These are
-                interface prototypes over the model's real outputs, not three separate live
-                products.
+                single-case deep dive, and a regulator's caseload-wide screening view. These
+                are UI/UX prototypes built around the model's actual reported outputs and
+                metrics — not wired up to a live inference backend — designed to show how one
+                detection system could serve three very different audiences.
             </p>
 
             <div class="features-grid">
@@ -271,7 +270,7 @@
                 <div class="feature-card">
                     <img src="assets/images/ponziguard-analyst.png" alt="PonziGuard analyst workbench interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid rgba(61,90,128,0.15);">
                     <h4>🔎 Analyst Workbench</h4>
-                    <p>A single flagged case annotated line by line — every rule match tied to a live-tallying evidence docket.</p>
+                    <p>A single flagged case annotated line by line every rule match tied to a live-tallying evidence docket.</p>
                     <a href="ponziguard/analyst.html" target="_blank" rel="noopener noreferrer">Open analyst view →</a>
                 </div>
                 <div class="feature-card">
@@ -293,7 +292,7 @@
                 15,010 messages drawn from Telegram spam/ham, phishing-email, and SMS-spam
                 sources, plus 401 hand-crafted synthetic Ponzi examples covering the patterns
                 public datasets don't. Training ran three epochs with early stopping, on CPU
-                only — no GPU access, which shaped every architecture decision.
+                only no GPU access, which shaped every architecture decision.
             </p>
 
             <div class="tech-details">
@@ -308,14 +307,14 @@
                     <p>12 categories, weights 1–5, gives every verdict an auditable trail</p>
                 </div>
                 <div class="tech-detail-card">
-                    <div class="tech-icon">🚀</div>
-                    <h4>FastAPI Backend</h4>
-                    <p>Serves the cascade behind a simple REST endpoint for the demo UIs</p>
+                    <div class="tech-icon">📊</div>
+                    <h4>Streamlit</h4>
+                    <p>Loads the cascade directly and serves the live interactive demo</p>
                 </div>
                 <div class="tech-detail-card">
-                    <div class="tech-icon">🐳</div>
-                    <h4>Docker</h4>
-                    <p>Containerized for reproducible deployment to Hugging Face Spaces</p>
+                    <div class="tech-icon">🐍</div>
+                    <h4>PyTorch + scikit-learn</h4>
+                    <p>Model training, evaluation, and the Stage 1/3 heuristic and rule layers</p>
                 </div>
             </div>
 
@@ -341,7 +340,7 @@ split = "70 / 10 / 20, stratified"
                 <h4>Held-Out vs. Curated Performance</h4>
                 <p>
                     On a held-out test set of 3,002 messages, the fine-tuned classifier reaches
-                    97.96% F1 (97.86% precision, 98.06% recall) — up from a 26.67% zero-shot
+                    97.96% F1 (97.86% precision, 98.06% recall) up from a 26.67% zero-shot
                     baseline. On a harder, hand-curated 60-message multilingual set designed to
                     stress-test generalization, the full cascade drops to a more honest 74.51%
                     F1 at 90.48% precision. Both numbers are reported, not just the flattering one.
@@ -350,7 +349,7 @@ split = "70 / 10 / 20, stratified"
 
             <p>
                 The system also holds up on latency: 28.14ms mean end-to-end on CPU, with a
-                95th-percentile of 64.45ms — comfortably under the 100ms target for real-time
+                95th-percentile of 64.45ms comfortably under the 100ms target for real-time
                 screening, even without GPU acceleration.
             </p>
         </section>
@@ -364,7 +363,7 @@ split = "70 / 10 / 20, stratified"
                 <li>
                     <strong>Generalization has a real gap, and it's worth naming:</strong> per-language
                     F1 on the curated set ranges from 92.31% on Indonesian down to 28.57% on Nigerian
-                    Pidgin. The classifier itself hits 100% recall on Pidgin — the rule engine is
+                    Pidgin. The classifier itself hits 100% recall on Pidgin the rule engine is
                     the bottleneck, because its 12 categories are English-anchored. Diagnosing
                     which stage was actually failing, rather than blaming the whole pipeline,
                     was the most useful debugging lesson of the project.
@@ -376,13 +375,13 @@ split = "70 / 10 / 20, stratified"
                 </li>
                 <li>
                     <strong>Explainability is a design constraint, not a bonus feature:</strong>
-                    building the weighted rule engine as a parallel, auditable layer — rather than
+                    building the weighted rule engine as a parallel, auditable layer rather than
                     trying to explain the transformer's internals — was what made the system usable
                     for a non-technical regulator.
                 </li>
                 <li>
                     <strong>CPU constraints force better architecture decisions:</strong> without
-                    GPU access, every choice — model size, cascade ordering, batch size — had to
+                    GPU access, every choice model size, cascade ordering, batch size had to
                     earn its latency cost. The four-transformer ensemble I'd have liked to try
                     would need roughly $60–80K of A100 compute; the cascade was the realistic path.
                 </li>

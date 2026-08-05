@@ -280,6 +280,14 @@
         </div>
       </div>
 
+      <div class="threshold-control" style="align-items:stretch; flex-direction:column; gap:10px;">
+        <div style="display:flex; gap:8px;">
+          <textarea id="liveInput" placeholder="Submit a new message to the live screening pipeline…" style="flex:1; min-height:44px; font-family:var(--sans); font-size:12px; padding:8px; border:1px solid var(--line); border-radius:4px; resize:vertical;"></textarea>
+          <button id="liveSubmit" style="background:var(--ink); color:#fff; border:none; border-radius:4px; padding:0 18px; font-size:12px; font-weight:600; cursor:pointer;">Submit</button>
+        </div>
+        <div id="liveStatus" style="font-family:var(--mono); font-size:10px; color:var(--ink-soft);"></div>
+      </div>
+
       <div class="threshold-control">
         <span class="tc-label">Deployment mode</span>
         <button class="tc-btn" data-t="0">τ=0</button>
@@ -418,7 +426,7 @@ function renderLangBars(){
   const el = document.getElementById("lang-bars");
   el.innerHTML = Object.entries(counts).map(([lang,count]) => `
     <div class="bar-row">
-      <div class="bar-label"><span>${labels[lang]}</span><b>${Math.round((count/total)*100)}%</b></div>
+      <div class="bar-label"><span>${labels[lang] || lang}</span><b>${Math.round((count/total)*100)}%</b></div>
       <div class="bar-track"><div class="bar-fill" style="width:${(count/total)*100}%"></div></div>
     </div>
   `).join("");
@@ -433,6 +441,73 @@ document.querySelectorAll(".tc-btn").forEach(btn => {
     renderThresholdReadout();
   });
 });
+
+/* ================= LIVE API WIRING ================= */
+
+// Point this at your running API. Change to your deployed URL once hosted.
+const API_URL = "http://localhost:8000";
+
+async function submitLive(){
+  const input = document.getElementById("liveInput");
+  const status = document.getElementById("liveStatus");
+  const text = input.value.trim();
+  if(!text) return;
+
+  status.textContent = "Screening…";
+
+  try{
+    const res = await fetch(`${API_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    if(!res.ok) throw new Error("API error " + res.status);
+    const data = await res.json();
+
+    const langCode = data.language ? data.language.code.toUpperCase() : "—";
+
+    if(data.early_exit){
+      CASES.unshift({
+        id: "LIVE-" + Date.now().toString().slice(-6),
+        lang: langCode,
+        snippet: text.slice(0, 90) + (text.length > 90 ? "…" : ""),
+        score: 0,
+        cat: "—",
+        status: "DISMISSED"
+      });
+      renderRegister();
+      renderCategoryBars();
+      renderLangBars();
+      status.textContent = "";
+      input.value = "";
+      return;
+    }
+
+    const outOfScope = data.verdict === "NOT_INVESTMENT";
+    const topRule = (!outOfScope && data.stage3.rules.length)
+      ? [...data.stage3.rules].sort((a,b) => b.weight - a.weight)[0].category
+      : "—";
+
+    CASES.unshift({
+      id: "LIVE-" + Date.now().toString().slice(-6),
+      lang: langCode,
+      snippet: text.slice(0, 90) + (text.length > 90 ? "…" : ""),
+      score: outOfScope ? 0 : data.stage3.risk_score,
+      cat: topRule,
+      status: "QUEUED"
+    });
+
+    renderRegister();
+    renderCategoryBars();
+    renderLangBars();
+    status.textContent = "";
+    input.value = "";
+  } catch(err){
+    status.textContent = "Couldn't reach the API — is it running at " + API_URL + "?";
+  }
+}
+
+document.getElementById("liveSubmit").addEventListener("click", submitLive);
 
 function tickClock(){
   const now = new Date();

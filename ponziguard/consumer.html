@@ -166,6 +166,7 @@
   .v-HIGH .result-head{ background:var(--high-soft); color:var(--high); }
   .v-MEDIUM .result-head{ background:var(--medium-soft); color:var(--medium); }
   .v-LOW .result-head{ background:var(--low-soft); color:var(--low); }
+  .v-SAFE .result-head{ background:var(--low-soft); color:var(--low); }
   .v-SCOPE .result-head{ background:#E8EAED; color:var(--ink-soft); }
 
   .result-body{
@@ -330,19 +331,71 @@ function updateCharCount(){
   document.getElementById("charcount").textContent = `${len} / 600`;
 }
 
+// Point this at your running API. Change to your deployed URL once hosted
+// (e.g. a Hugging Face Space or Render URL) instead of localhost.
+const API_URL = "http://localhost:8000";
+
 function findMatch(text){
   const hit = EXAMPLES.find(e => e.text === text);
   if(hit) return hit;
-  // Fallback heuristic for free-typed text: not a real model, just a demo default
+  return null; // no local fallback data for free-typed text — API or nothing
+}
+
+async function callApi(text){
+  const res = await fetch(`${API_URL}/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  if(!res.ok) throw new Error("API error " + res.status);
+  const data = await res.json();
+  const langLabel = data.language ? data.language.name : null;
+
+  if(data.early_exit){
+    return {
+      verdict: "SAFE",
+      lang: langLabel,
+      explain: "Stage 1's keyword pre-filter found no investment-adjacent language at all, so this never reached the classifier — that's a real compute-saving skip, not just a label. Stage 1 is recall-optimized, so this only happens on messages very unlikely to be Ponzi-related.",
+      rules: []
+    };
+  }
+
+  if(data.verdict === "NOT_INVESTMENT"){
+    return {
+      verdict: "SCOPE",
+      lang: langLabel,
+      confidence: data.stage2.confidence,
+      explain: "This message contains no investment framing at all, so it's dismissed before reaching the rule engine. Outside scope doesn't mean safe — it means this tool isn't the right check for this message.",
+      rules: []
+    };
+  }
+
+  const rules = (data.stage3.rules || []).map(r => ({ cat: r.category, w: r.weight }));
   return {
-    lang: "EN", verdict: "LOW", score: 2,
-    explain: "No strong Ponzi-pattern rules matched this text in the demo. The deployed model would run the full three-stage cascade on real input.",
-    rules: []
+    verdict: data.verdict,
+    lang: langLabel,
+    confidence: data.stage2.confidence,
+    explain: `The classifier is ${Math.round(data.stage2.confidence*100)}% confident this is ${data.stage2.label.replace('_',' ')}. The rule engine matched ${rules.length} categor${rules.length === 1 ? 'y' : 'ies'} for a weighted score of ${data.stage3.risk_score}.`,
+    rules
   };
 }
 
-function runCheck(forcedExample){
-  const text = document.getElementById("input").value.trim();
+function renderResult(match){
+  const result = document.getElementById("result");
+  result.className = "result v-" + match.verdict;
+  document.getElementById("verdictText").textContent =
+    match.verdict === "SCOPE" ? "Outside scope" : match.verdict;
+  document.getElementById("langBadge").textContent =
+    match.lang || (match.confidence != null ? `${Math.round(match.confidence*100)}% conf` : "—");
+  document.getElementById("explainText").textContent = match.explain;
+  document.getElementById("ruleList").innerHTML = match.rules.length
+    ? match.rules.map(r => `<div class="rule-row"><span>${r.cat}</span><b>+${r.w}</b></div>`).join("")
+    : `<div class="rule-row"><span>No rule categories triggered</span><b>—</b></div>`;
+  requestAnimationFrame(() => result.classList.add("show"));
+}
+
+async function runCheck(forcedExample){
+  const text = forcedExample ? forcedExample.text : document.getElementById("input").value.trim();
   if(!text) return;
   const btn = document.getElementById("checkBtn");
   const spinner = document.getElementById("spinner");
@@ -353,26 +406,27 @@ function runCheck(forcedExample){
   label.textContent = "Running cascade…";
   result.classList.remove("show");
 
-  setTimeout(() => {
-    const match = forcedExample || findMatch(text);
+  try{
+    const match = await callApi(text);
     spinner.style.display = "none";
     label.textContent = "Check this message";
+    renderResult(match);
+  } catch(err){
+    // API unreachable (asleep, not running, CORS, etc.) — fall back to
+    // the bundled example data so the demo never looks broken.
+    spinner.style.display = "none";
+    label.textContent = "Check this message";
+    const fallback = findMatch(text) || {
+      verdict: "LOW", lang: "Demo mode",
+      explain: "Couldn't reach the live API, so this is showing bundled demo data instead of a real prediction. Check that the API is running.",
+      rules: []
+    };
+    renderResult(fallback);
+  }
 
-    result.className = "result v-" + match.verdict;
-    document.getElementById("verdictText").textContent =
-      match.verdict === "SCOPE" ? "Outside scope" : match.verdict;
-    document.getElementById("langBadge").textContent = match.lang;
-    document.getElementById("explainText").textContent = match.explain;
-    document.getElementById("ruleList").innerHTML = match.rules.length
-      ? match.rules.map(r => `<div class="rule-row"><span>${r.cat}</span><b>+${r.w}</b></div>`).join("")
-      : `<div class="rule-row"><span>No rule categories triggered</span><b>—</b></div>`;
-
-    requestAnimationFrame(() => result.classList.add("show"));
-
-    streakCount++;
-    document.getElementById("streakBox").style.display = "flex";
-    document.getElementById("streakCount").textContent = streakCount;
-  }, 650);
+  streakCount++;
+  document.getElementById("streakBox").style.display = "flex";
+  document.getElementById("streakCount").textContent = streakCount;
 }
 
 document.getElementById("input").addEventListener("input", updateCharCount);

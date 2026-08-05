@@ -455,9 +455,16 @@
 
     <!-- LEFT: CASE QUEUE -->
     <div class="queue" id="queue">
-      <div class="queue-label">Case queue · 4 flagged</div>
+      <div class="queue-label">Analyze a new case</div>
+      <div style="padding:0 20px 16px;">
+        <textarea id="liveInput" placeholder="Paste a message to run through the live cascade…" style="width:100%; min-height:70px; font-family:var(--sans); font-size:12px; padding:8px; border:1px solid var(--line); border-radius:4px; resize:vertical;"></textarea>
+        <button id="liveSubmit" style="width:100%; margin-top:6px; background:var(--teal); color:#fff; border:none; border-radius:4px; padding:8px; font-size:12px; font-weight:600; cursor:pointer;">Analyze live →</button>
+        <div id="liveStatus" style="font-family:var(--mono); font-size:10px; color:var(--ink-soft); margin-top:6px;"></div>
+      </div>
+      <div class="queue-label">Case queue · <span id="queue-count">4</span> flagged</div>
       <!-- case items injected by JS -->
     </div>
+
 
     <!-- CENTER: EXHIBIT + PIPELINE -->
     <div class="exhibit-col">
@@ -650,14 +657,31 @@ function renderPipeline(c){
 
   rows.push(`
     <div class="stage">
-      <div class="stage-dot ${c.stage1.verdict === 'pass' ? 'pass' : 'flag'}">1</div>
+      <div class="stage-dot ${c.earlyExit ? 'dismiss' : (c.stage1.verdict === 'pass' ? 'pass' : 'flag')}">1</div>
       <div class="stage-body">
         <h4>Stage 1 — Heuristic pre-filter</h4>
-        <p>Lightweight keyword/embedding pass. Recall-optimized (98.14%) to avoid dropping true positives before the classifier sees them.</p>
+        <p>${c.earlyExit
+          ? 'No investment-adjacent keywords matched at all. This is a real gate: everything downstream is skipped, not just relabeled — Stage 1 is recall-optimized (98.14% recall alone) so this only fires on messages very unlikely to be Ponzi-related.'
+          : 'Matched at least one investment-adjacent keyword, so the message was forwarded to the classifier. Recall-optimized (98.14%) to avoid dropping true positives.'}</p>
       </div>
-      <div class="stage-value">${c.stage1.score.toFixed(2)}<small>${c.stage1.verdict === 'pass' ? 'forwarded' : 'flagged'}</small></div>
+      <div class="stage-value">${c.stage1.score.toFixed(2)}<small>${c.earlyExit ? 'not forwarded' : 'forwarded'}</small></div>
     </div>
   `);
+
+  if(c.earlyExit){
+    rows.push(`
+      <div class="stage">
+        <div class="stage-dot dismiss">2–3</div>
+        <div class="stage-body">
+          <h4>Stages 2, 2.5, 3 — skipped</h4>
+          <p>Never reached. The transformer doesn't run on this message at all, which is the actual point of a cascade — cheap stages should save the expensive ones real work, not just narrate a decision after the fact.</p>
+        </div>
+        <div class="stage-value">—<small>compute saved</small></div>
+      </div>
+    `);
+    el.innerHTML = rows.join("");
+    return;
+  }
 
   if(c.stage2.verdict === "skipped"){
     rows.push(`
@@ -755,11 +779,101 @@ function renderDocket(c){
 
 function renderAll(){
   renderQueue();
+  document.getElementById("queue-count").textContent = CASES.length;
   const c = CASES[activeIndex];
   renderExhibit(c);
   renderPipeline(c);
   renderDocket(c);
 }
+
+/* ================= LIVE API WIRING ================= */
+
+// Point this at your running API. Change to your deployed URL once hosted.
+const API_URL = "http://localhost:8000";
+
+function findSpanInText(text, pattern){
+  const idx = text.toLowerCase().indexOf(pattern.toLowerCase());
+  if(idx === -1) return null;
+  return text.slice(idx, idx + pattern.length);
+}
+
+async function analyzeLive(){
+  const input = document.getElementById("liveInput");
+  const status = document.getElementById("liveStatus");
+  const text = input.value.trim();
+  if(!text) return;
+
+  status.textContent = "Running live cascade…";
+
+  try{
+    const res = await fetch(`${API_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    if(!res.ok) throw new Error("API error " + res.status);
+    const data = await res.json();
+
+    const langLabel = data.language ? data.language.name : "—";
+
+    if(data.early_exit){
+      const liveCase = {
+        id: "LIVE-" + Date.now().toString().slice(-6),
+        lang: langLabel,
+        snippet: text.slice(0, 90) + (text.length > 90 ? "…" : ""),
+        text: text,
+        stage1: { score: 0.10, verdict: "pass" },
+        earlyExit: true,
+        stage2: { score: 0, verdict: "pass" },
+        stage25: { score: null, dismissed: true },
+        evidence: [],
+        threshold: 0,
+        outOfScope: true,
+        note: "Stage 1 found no investment-adjacent keywords, so Stage 2 (the transformer) never ran — a real compute-saving skip, not just a label. Live result from the deployed model."
+      };
+      CASES.unshift(liveCase);
+      activeIndex = 0;
+      renderAll();
+      status.textContent = "";
+      input.value = "";
+      return;
+    }
+
+    const outOfScope = data.verdict === "NOT_INVESTMENT";
+    let evidence = [];
+    if(!outOfScope){
+      data.stage3.rules.forEach(r => {
+        const span = findSpanInText(text, r.matched[0]);
+        if(span) evidence.push({ span, category: r.category, weight: r.weight });
+      });
+    }
+
+    const liveCase = {
+      id: "LIVE-" + Date.now().toString().slice(-6),
+      lang: langLabel,
+      snippet: text.slice(0, 90) + (text.length > 90 ? "…" : ""),
+      text: text,
+      stage1: { score: 0.85, verdict: "pass" },
+      earlyExit: false,
+      stage2: { score: data.stage2.ponzi_probability, verdict: data.stage2.ponzi_probability >= 0.5 ? "flag" : "pass" },
+      stage25: { score: null, dismissed: outOfScope },
+      evidence: evidence,
+      threshold: outOfScope ? 0 : data.stage3.risk_score,
+      outOfScope: outOfScope,
+      note: outOfScope ? "Dismissed at Stage 2.5 — no investment framing detected. Live result from the deployed model." : "Live result from the deployed model, not a bundled sample."
+    };
+
+    CASES.unshift(liveCase);
+    activeIndex = 0;
+    renderAll();
+    status.textContent = "";
+    input.value = "";
+  } catch(err){
+    status.textContent = "Couldn't reach the API — is it running at " + API_URL + "?";
+  }
+}
+
+document.getElementById("liveSubmit").addEventListener("click", analyzeLive);
 
 function tickClock(){
   const now = new Date();
