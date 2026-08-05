@@ -1,5 +1,4 @@
 # Oluwademilade Somide — Portfolio Website
-# MATRIC NO : 22120613050
 
 A fully responsive, production-ready personal portfolio website showcasing my work as a Data Scientist.
 
