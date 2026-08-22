@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest Lab — Does Trend-Following Beat Buy & Hold?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  :root {
+    --ink: #14213D;
+    --paper: #EDEFF2;
+    --paper-raised: #FFFFFF;
+    --teal: #3A7169;
+    --amber: #C98A2C;
+    --sage: #7C9885;
+    --crimson: #A8433D;
+    --line: #D7DBE2;
+    --ink-soft: #4A5573;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding: 88px 0 64px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    max-width: 780px;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--teal);
+  }
+  .hero-sub {
+    margin-top: 22px;
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 620px;
+  }
+  .hero-meta {
+    margin-top: 32px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .hero-meta span b { color: var(--ink); }
+
+  /* ---------- SECTIONS ---------- */
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .pill-group { display: flex; gap: 6px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 8px; padding: 4px; }
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .pill:hover { color: var(--ink); }
+  .pill.active { background: var(--ink); color: var(--paper); }
+
+  .text-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+  }
+  .text-input:focus { outline: 2px solid var(--teal); outline-offset: -1px; }
+  #ticker-input { width: 100px; text-transform: uppercase; }
+
+  .run-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: var(--amber);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .run-btn:hover { opacity: 0.9; }
+  .run-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .status-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+    min-height: 16px;
+  }
+  .status-line.error { color: var(--crimson); }
+
+  /* ---------- METRIC CARDS ---------- */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .metric-card {
+    background: var(--paper-raised);
+    padding: 20px 16px;
+  }
+  .metric-label {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .metric-value.positive { color: var(--teal); }
+  .metric-value.negative { color: var(--crimson); }
+
+  /* ---------- CHART ---------- */
+  .chart-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .chart-wrap { height: 320px; }
+  .chart-caption {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ---------- TABLE ---------- */
+  table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  tr.best td { background: rgba(201, 138, 44, 0.08); }
+  tr.best td:first-child { border-left: 3px solid var(--amber); }
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--amber);
+    color: #fff;
+    margin-left: 8px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- FINDING BOX (signature element) ---------- */
+  .finding {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 14px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .finding .section-label { color: rgba(237,239,242,0.55); }
+  .finding h2 { color: #fff; }
+  .finding-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 28px;
+  }
+  .finding-col { position: relative; }
+  .finding-col .tag-mini {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(237,239,242,0.5);
+    margin-bottom: 10px;
+  }
+  .finding-sharpe {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .finding-col.train .finding-sharpe { color: var(--sage); }
+  .finding-col.test .finding-sharpe { color: var(--amber); }
+  .finding-detail { margin-top: 10px; font-size: 13px; color: rgba(237,239,242,0.7); font-family: 'JetBrains Mono', monospace; }
+  .finding-arrow {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    color: rgba(237,239,242,0.35);
+  }
+
+  footer {
+    padding: 40px 0 80px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  footer a { color: var(--teal); }
+
+  @media (max-width: 720px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .finding-split { grid-template-columns: 1fr; }
+    .finding-arrow { display: none; }
+    .finding { padding: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">Backtest Lab</div>
+    <h1>Strategy Backtester</h1>
+    <div class="hero-meta">
+      <span>Asset: <b id="meta-ticker">SPY</b></span>
+      <span>Period: <b>2019 to 2025</b></span>
+      <span>Starting capital: <b>$10,000</b></span>
+    </div>
+  </div>
+
+  <!-- STRATEGY COMPARISON -->
+  <section>
+    <div class="controls">
+      <input type="text" id="ticker-input" class="text-input" value="SPY" placeholder="Ticker, e.g. SPY">
+      <input type="date" id="start-input" class="text-input" value="2019-01-01">
+      <input type="date" id="end-input" class="text-input" value="2025-01-01">
+      <button class="run-btn" id="run-btn">Run backtest</button>
+    </div>
+    <div class="controls">
+      <div class="pill-group" id="strategy-pills">
+        <button class="pill active" data-strategy="ma">Moving Average</button>
+        <button class="pill" data-strategy="bh">Buy &amp; Hold</button>
+        <button class="pill" data-strategy="rsi">RSI Mean-Reversion</button>
+      </div>
+    </div>
+    <div id="status-line" class="status-line"></div>
+
+    <div class="metric-grid" id="metric-grid"></div>
+
+    <div class="chart-card">
+      <div class="chart-wrap"><canvas id="equityChart"></canvas></div>
+      <div class="chart-caption" id="chart-caption">Portfolio value over time, starting from $10,000.</div>
+    </div>
+
+    <div class="chart-card" style="margin-top: 20px;">
+      <div class="chart-wrap"><canvas id="comparisonChart"></canvas></div>
+      <div class="chart-caption">Sharpe ratio by strategy.</div>
+    </div>
+  </section>
+
+  <!-- PARAMETER SWEEP -->
+  <section>
+    <div class="section-label">Parameter Sweep — SPY, 2019 to 2025</div>
+    <table>
+      <thead>
+        <tr><th>Short / Long</th><th>Sharpe</th><th>Return</th><th>Max Drawdown</th><th>Win Rate</th></tr>
+      </thead>
+      <tbody id="sweep-table"></tbody>
+    </table>
+  </section>
+
+  <!-- THE FINDING -->
+  <section style="border-bottom: none;">
+    <div class="finding">
+      <div class="section-label">Train vs. Test: Sharpe Ratio</div>
+
+      <div class="finding-split">
+        <div class="finding-col train">
+          <div class="tag-mini">Training: 2019 to 2022</div>
+          <div class="finding-sharpe">1.37</div>
+          <div class="finding-detail">Return: 70.11% · Drawdown: −12.44%</div>
+          <div class="finding-arrow">→</div>
+        </div>
+        <div class="finding-col test">
+          <div class="tag-mini">Test: 2022 to 2025 (unseen)</div>
+          <div class="finding-sharpe">0.84</div>
+          <div class="finding-detail">Return: 29.08% · Drawdown: −15.25%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Backtest Lab. <a href="case-study.html" style="color:var(--teal)">Read the full case study →</a></div>
+  </footer>
+
+</div>
+
+<script>
+  // No equity_curve arrays are bundled as demo data, since a real day-by-day
+  // curve for an arbitrary ticker/date range can only come from actually
+  // running the backtest. Set this to your running FastAPI backend's URL
+  // (e.g. from Codespaces' forwarded port) to make the dashboard live.
+  const API_BASE_URL = "";
+
+  // Metrics-only fallback (from the original SPY 2019-2025 run in the case
+  // study), used only if the API is unreachable, so the page still shows
+  // something meaningful before you connect a live backend.
+  const FALLBACK_METRICS = {
+    ma:  { label: "Moving Average (50/200)", color: "#C98A2C", total_return: 74.56, cagr: 9.74, sharpe: 0.75, max_dd: -22.15, win_rate: 42.01 },
+    bh:  { label: "Buy & Hold", color: "#3A7169", total_return: 157.46, cagr: 17.08, sharpe: 0.90, max_dd: -33.72, win_rate: 55.53 },
+    rsi: { label: "RSI Mean-Reversion (14d)", color: "#7C9885", total_return: 51.70, cagr: 7.20, sharpe: 0.52, max_dd: -28.38, win_rate: 16.10 },
+  };
+
+  const SWEEP = [
+    { window: "10 / 100", sharpe: 0.95, ret: 93.50, dd: -22.55, win: 41.35, best: true },
+    { window: "10 / 200", sharpe: 0.85, ret: 81.24, dd: -20.50, win: 39.10 },
+    { window: "20 / 100", sharpe: 0.75, ret: 74.56, dd: -22.15, win: 42.01 },
+    { window: "50 / 200", sharpe: 0.71, ret: 81.13, dd: -33.72, win: 38.70 },
+    { window: "10 / 50",  sharpe: 0.70, ret: 60.70, dd: -15.45, win: 39.83 },
+    { window: "20 / 200", sharpe: 0.57, ret: 53.73, dd: -34.26, win: 38.97 },
+    { window: "50 / 100", sharpe: 0.53, ret: 51.73, dd: -34.42, win: 41.68 },
+    { window: "20 / 50",  sharpe: 0.52, ret: 41.87, dd: -29.95, win: 39.23 },
+  ];
+
+  let currentStrategy = "ma";
+  let equityChart, comparisonChart;
+  let currentMetrics = FALLBACK_METRICS;
+  let currentCurves = null; // { ma: {date: value}, bh: {...}, rsi: {...} } once loaded live
+
+  const STRATEGY_KEYS = {
+    ma: "moving_average_strategy",
+    bh: "buy_and_hold_benchmark",
+    rsi: "rsi_mean_reversion_strategy",
+  };
+  const STRATEGY_META = {
+    ma:  { label: "Moving Average (50/200)", color: "#C98A2C" },
+    bh:  { label: "Buy & Hold", color: "#3A7169" },
+    rsi: { label: "RSI Mean-Reversion (14d)", color: "#7C9885" },
+  };
+
+  function setStatus(text, isError) {
+    const el = document.getElementById("status-line");
+    el.textContent = text;
+    el.classList.toggle("error", !!isError);
+  }
+
+  async function runLiveBacktest(ticker, start, end) {
+    if (!API_BASE_URL) {
+      setStatus("No API_BASE_URL configured, showing bundled demo metrics for SPY 2019-2025. Connect your FastAPI backend in the script to run live backtests for any ticker or date range.");
+      currentMetrics = FALLBACK_METRICS;
+      currentCurves = null;
+      return;
+    }
+
+    const runBtn = document.getElementById("run-btn");
+    runBtn.disabled = true;
+    setStatus(`Running backtest for ${ticker} (${start} to ${end})...`);
+
+    try {
+      const url = `${API_BASE_URL}/backtest?ticker=${encodeURIComponent(ticker)}&start=${start}&end=${end}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || `API returned ${res.status}`);
+      }
+      const json = await res.json();
+
+      currentMetrics = {
+        ma:  { ...STRATEGY_META.ma,  ...json.moving_average_strategy.metrics },
+        bh:  { ...STRATEGY_META.bh,  ...json.buy_and_hold_benchmark.metrics },
+        rsi: { ...STRATEGY_META.rsi, ...json.rsi_mean_reversion_strategy.metrics },
+      };
+      // Normalize metric key names (API returns *_pct suffixed keys)
+      for (const key of ["ma", "bh", "rsi"]) {
+        currentMetrics[key].total_return = currentMetrics[key].total_return_pct;
+        currentMetrics[key].cagr = currentMetrics[key].cagr_pct;
+        currentMetrics[key].max_dd = currentMetrics[key].max_drawdown_pct;
+        currentMetrics[key].win_rate = currentMetrics[key].win_rate_pct;
+      }
+
+      currentCurves = {
+        ma: json.moving_average_strategy.equity_curve,
+        bh: json.buy_and_hold_benchmark.equity_curve,
+        rsi: json.rsi_mean_reversion_strategy.equity_curve,
+      };
+
+      setStatus(`Live backtest complete for ${ticker} (${start} to ${end}).`);
+    } catch (err) {
+      setStatus(`Could not reach API (${err.message}). Showing bundled demo metrics for SPY 2019-2025 instead.`, true);
+      currentMetrics = FALLBACK_METRICS;
+      currentCurves = null;
+    } finally {
+      runBtn.disabled = false;
+    }
+  }
+
+  function renderMetrics(key) {
+    const d = currentMetrics[key];
+    const grid = document.getElementById("metric-grid");
+    grid.innerHTML = `
+      <div class="metric-card"><div class="metric-label">Total Return</div><div class="metric-value positive">${d.total_return.toFixed(2)}%</div></div>
+      <div class="metric-card"><div class="metric-label">CAGR</div><div class="metric-value positive">${d.cagr.toFixed(2)}%</div></div>
+      <div class="metric-card"><div class="metric-label">Sharpe Ratio</div><div class="metric-value">${d.sharpe.toFixed(2)}</div></div>
+      <div class="metric-card"><div class="metric-label">Max Drawdown</div><div class="metric-value negative">${d.max_dd.toFixed(2)}%</div></div>
+      <div class="metric-card"><div class="metric-label">Win Rate</div><div class="metric-value">${d.win_rate.toFixed(2)}%</div></div>
+    `;
+  }
+
+  function renderEquityChart() {
+    const ctx = document.getElementById("equityChart");
+    const caption = document.getElementById("chart-caption");
+
+    if (equityChart) equityChart.destroy();
+
+    if (!currentCurves) {
+      // No live curve data available: show a message instead of a fake chart
+      ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+      caption.textContent = "Connect API_BASE_URL and run a live backtest to see the day-by-day equity curve here.";
+      return;
+    }
+
+    const datasets = ["ma", "bh", "rsi"].map(key => {
+      const curve = currentCurves[key];
+      const points = Object.entries(curve).map(([date, value]) => ({ x: date, y: value }));
+      return {
+        label: STRATEGY_META[key].label,
+        data: points,
+        borderColor: STRATEGY_META[key].color,
+        backgroundColor: STRATEGY_META[key].color,
+        borderWidth: key === currentStrategy ? 2.5 : 1.5,
+        pointRadius: 0,
+        tension: 0.1,
+      };
+    });
+
+    equityChart = new Chart(ctx, {
+      type: "line",
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        parsing: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { family: "Inter", size: 12 }, boxWidth: 12 } },
+        },
+        scales: {
+          x: { type: "time", time: { unit: "month" }, grid: { display: false }, ticks: { font: { family: "JetBrains Mono", size: 10 } } },
+          y: { grid: { color: "#D7DBE2" }, ticks: { font: { family: "JetBrains Mono", size: 11 }, callback: v => "$" + v.toLocaleString() } },
+        },
+      },
+    });
+
+    caption.textContent = "Portfolio value over time, starting from $10,000. Highlighted line matches the selected strategy above.";
+  }
+
+  function renderComparisonChart() {
+    const ctx = document.getElementById("comparisonChart");
+    const labels = ["ma", "bh", "rsi"].map(k => currentMetrics[k].label || STRATEGY_META[k].label);
+    const sharpeVals = ["ma", "bh", "rsi"].map(k => currentMetrics[k].sharpe);
+    const colors = ["ma", "bh", "rsi"].map(k => STRATEGY_META[k].color);
+
+    if (comparisonChart) comparisonChart.destroy();
+    comparisonChart = new Chart(ctx, {
+      type: "bar",
+      data: { labels, datasets: [{ data: sharpeVals, backgroundColor: colors, borderRadius: 6, maxBarThickness: 70 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: "#D7DBE2" }, ticks: { font: { family: "JetBrains Mono", size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { family: "Inter", size: 12 } } },
+        },
+      },
+    });
+  }
+
+  function renderSweepTable() {
+    const tbody = document.getElementById("sweep-table");
+    tbody.innerHTML = SWEEP.map(row => `
+      <tr class="${row.best ? 'best' : ''}">
+        <td>${row.window}${row.best ? '<span class="tag">BEST</span>' : ''}</td>
+        <td>${row.sharpe.toFixed(2)}</td>
+        <td>${row.ret.toFixed(2)}%</td>
+        <td>${row.dd.toFixed(2)}%</td>
+        <td>${row.win.toFixed(2)}%</td>
+      </tr>
+    `).join("");
+  }
+
+  function renderAll() {
+    renderMetrics(currentStrategy);
+    renderEquityChart();
+    renderComparisonChart();
+  }
+
+  document.querySelectorAll(".pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentStrategy = btn.dataset.strategy;
+      renderMetrics(currentStrategy);
+      renderEquityChart(); // re-render to update which line is highlighted
+    });
+  });
+
+  document.getElementById("run-btn").addEventListener("click", async () => {
+    const ticker = document.getElementById("ticker-input").value.trim().toUpperCase() || "SPY";
+    const start = document.getElementById("start-input").value || "2019-01-01";
+    const end = document.getElementById("end-input").value || "2025-01-01";
+    document.getElementById("meta-ticker").textContent = ticker;
+    await runLiveBacktest(ticker, start, end);
+    renderAll();
+  });
+
+  async function init() {
+    renderSweepTable();
+    renderAll();
+  }
+
+  init();
+</script>
+
+</body>
+</html>
