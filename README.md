@@ -1,4 +1,4 @@
-# Oluwademilade Somide — Portfolio Website
+# Portfolio Website
 
 A fully responsive, production-ready personal portfolio website showcasing my work as a Data Scientist.
 
