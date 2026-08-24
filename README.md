@@ -2,7 +2,7 @@
 
 A fully responsive, production-ready personal portfolio website showcasing my work as a Data Scientist.
 
-🔗 **Live Site:** [demisomi.github.io](https://demisomi.github.io)
+🔗 **Live Site:** [demisomi.github.io](https://demilade-somide.netlify.app/)
 
 
 ---
