@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
   :root {
     --ink: #14213D;
@@ -369,7 +368,7 @@
   </section>
 
   <footer>
-    <div>Backtest Lab. <a href="case-study.html" style="color:var(--teal)">Read the full case study →</a></div>
+    <div>Backtest Lab. <a href="project-backtestlab-case-study.html" style="color:var(--teal)">Read the full case study →</a></div>
   </footer>
 
 </div>
@@ -379,7 +378,7 @@
   // curve for an arbitrary ticker/date range can only come from actually
   // running the backtest. Set this to your running FastAPI backend's URL
   // (e.g. from Codespaces' forwarded port) to make the dashboard live.
-  const API_BASE_URL = "";
+  const API_BASE_URL = "https://backtest-lab-yjoz.onrender.com/";
 
   // Metrics-only fallback (from the original SPY 2019-2025 run in the case
   // study), used only if the API is unreachable, so the page still shows
@@ -433,10 +432,11 @@
 
     const runBtn = document.getElementById("run-btn");
     runBtn.disabled = true;
-    setStatus(`Running backtest for ${ticker} (${start} to ${end})...`);
+    setStatus(`Running backtest for ${ticker} (${start} to ${end})... (first request after idle can take up to a minute while the API wakes up)`);
 
     try {
-      const url = `${API_BASE_URL}/backtest?ticker=${encodeURIComponent(ticker)}&start=${start}&end=${end}`;
+      const baseUrl = API_BASE_URL.replace(/\/+$/, ""); // strip any trailing slash(es)
+      const url = `${baseUrl}/backtest?ticker=${encodeURIComponent(ticker)}&start=${start}&end=${end}`;
       const res = await fetch(url);
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
@@ -453,6 +453,7 @@
       for (const key of ["ma", "bh", "rsi"]) {
         currentMetrics[key].total_return = currentMetrics[key].total_return_pct;
         currentMetrics[key].cagr = currentMetrics[key].cagr_pct;
+        currentMetrics[key].sharpe = currentMetrics[key].sharpe_ratio;
         currentMetrics[key].max_dd = currentMetrics[key].max_drawdown_pct;
         currentMetrics[key].win_rate = currentMetrics[key].win_rate_pct;
       }
@@ -489,47 +490,54 @@
     const ctx = document.getElementById("equityChart");
     const caption = document.getElementById("chart-caption");
 
-    if (equityChart) equityChart.destroy();
+    if (equityChart) { equityChart.destroy(); equityChart = null; }
 
     if (!currentCurves) {
-      // No live curve data available: show a message instead of a fake chart
       ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
       caption.textContent = "Connect API_BASE_URL and run a live backtest to see the day-by-day equity curve here.";
       return;
     }
 
-    const datasets = ["ma", "bh", "rsi"].map(key => {
-      const curve = currentCurves[key];
-      const points = Object.entries(curve).map(([date, value]) => ({ x: date, y: value }));
-      return {
-        label: STRATEGY_META[key].label,
-        data: points,
-        borderColor: STRATEGY_META[key].color,
-        backgroundColor: STRATEGY_META[key].color,
-        borderWidth: key === currentStrategy ? 2.5 : 1.5,
-        pointRadius: 0,
-        tension: 0.1,
-      };
-    });
+    try {
+      // All three curves come from the same price history, so they share
+      // the same dates. Use one curve's keys as the shared x-axis labels
+      // instead of relying on Chart.js's time-scale date adapter.
+      const dates = Object.keys(currentCurves.ma || currentCurves.bh || currentCurves.rsi || {});
 
-    equityChart = new Chart(ctx, {
-      type: "line",
-      data: { datasets },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        parsing: false,
-        plugins: {
-          legend: { position: "top", labels: { font: { family: "Inter", size: 12 }, boxWidth: 12 } },
-        },
-        scales: {
-          x: { type: "time", time: { unit: "month" }, grid: { display: false }, ticks: { font: { family: "JetBrains Mono", size: 10 } } },
-          y: { grid: { color: "#D7DBE2" }, ticks: { font: { family: "JetBrains Mono", size: 11 }, callback: v => "$" + v.toLocaleString() } },
-        },
-      },
-    });
+      const datasets = ["ma", "bh", "rsi"].map(key => {
+        const curve = currentCurves[key] || {};
+        return {
+          label: STRATEGY_META[key].label,
+          data: dates.map(d => curve[d]),
+          borderColor: STRATEGY_META[key].color,
+          backgroundColor: STRATEGY_META[key].color,
+          borderWidth: key === currentStrategy ? 2.5 : 1.5,
+          pointRadius: 0,
+          tension: 0.1,
+        };
+      });
 
-    caption.textContent = "Portfolio value over time, starting from $10,000. Highlighted line matches the selected strategy above.";
+      equityChart = new Chart(ctx, {
+        type: "line",
+        data: { labels: dates, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top", labels: { font: { family: "Inter", size: 12 }, boxWidth: 12 } },
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { family: "JetBrains Mono", size: 10 }, maxTicksLimit: 8 } },
+            y: { grid: { color: "#D7DBE2" }, ticks: { font: { family: "JetBrains Mono", size: 11 }, callback: v => "$" + v.toLocaleString() } },
+          },
+        },
+      });
+
+      caption.textContent = "Portfolio value over time, starting from $10,000. Highlighted line matches the selected strategy above.";
+    } catch (err) {
+      console.error("Equity chart render failed:", err);
+      caption.textContent = "Could not render the equity curve chart (see browser console for details).";
+    }
   }
 
   function renderComparisonChart() {

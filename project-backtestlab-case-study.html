@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study: Backtest Lab, Does Trend-Following Beat Buy &amp; Hold?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14213D;
+    --paper: #EDEFF2;
+    --paper-raised: #FFFFFF;
+    --teal: #3A7169;
+    --amber: #C98A2C;
+    --sage: #7C9885;
+    --crimson: #A8433D;
+    --line: #D7DBE2;
+    --ink-soft: #4A5573;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  .hero { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal); font-weight: 500; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--amber); border-radius: 50%; display: inline-block; }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 44px); line-height: 1.1; letter-spacing: -0.01em;
+  }
+  .hero-sub { margin-top: 18px; font-size: 17px; color: var(--ink-soft); max-width: 600px; }
+  .meta-row {
+    margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-soft);
+  }
+  .meta-row span b { color: var(--ink); }
+
+  section { padding: 44px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  .num {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal);
+    margin-bottom: 8px; letter-spacing: 0.04em;
+  }
+  h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 25px; margin-bottom: 16px; letter-spacing: -0.01em; }
+  p { margin-bottom: 14px; color: var(--ink-soft); font-size: 15.5px; }
+  p b { color: var(--ink); font-weight: 600; }
+  ul { margin: 14px 0 14px 20px; color: var(--ink-soft); font-size: 15.5px; }
+  li { margin-bottom: 8px; }
+
+  .stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 10px;
+    overflow: hidden; margin: 20px 0;
+  }
+  .stat { background: var(--paper-raised); padding: 18px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 6px; }
+  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+
+  .callout {
+    background: var(--ink); color: var(--paper); border-radius: 12px; padding: 28px 32px; margin: 24px 0;
+  }
+  .callout .num { color: rgba(237,239,242,0.55); }
+  .callout p { color: rgba(237,239,242,0.85); margin-bottom: 0; font-size: 15px; }
+  .callout p b { color: #fff; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    background: var(--paper-raised); border: 1px solid var(--line);
+    padding: 2px 6px; border-radius: 4px; color: var(--crimson);
+  }
+
+  .cta {
+    display: inline-block; margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    color: var(--teal); text-decoration: none; border-bottom: 1px solid var(--teal);
+    padding-bottom: 2px;
+  }
+
+  footer { padding: 40px 0 80px; font-size: 13px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+
+  @media (max-width: 620px) {
+    .stat-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Case Study: Backtest Lab</div>
+    <h1>Does trend-following actually beat just holding the market?</h1>
+    <p class="hero-sub">A quantitative backtesting project testing three trading strategies against six years of real market data, including a validation step most backtests skip.</p>
+    <div class="meta-row">
+      <span>Stack: <b>Python, pandas, FastAPI, Chart.js</b></span>
+      <span>Data: <b>yfinance</b></span>
+      <span>Period: <b>2019 to 2025</b></span>
+    </div>
+  </div>
+
+  <section>
+    <div class="num">01. The Question</div>
+    <h2>Why bother testing a trading strategy at all?</h2>
+    <p>Trend-following strategies like moving average crossovers are some of the oldest ideas in trading: buy when the trend turns up, sell when it turns down. They're intuitive, and it's easy to assume "reacting to the trend" should beat doing nothing.</p>
+    <p>This project set out to test that assumption directly: simulate a <b>Moving Average Crossover</b> strategy and an <b>RSI Mean-Reversion</b> strategy against real historical price data, and compare both to the simplest possible baseline, <b>Buy &amp; Hold</b>, to see whether either one earns its complexity.</p>
+  </section>
+
+  <section>
+    <div class="num">02. Method</div>
+    <h2>Building the backtesting engine</h2>
+    <p>The system pulls daily price history via <code>yfinance</code>, generates buy/sell signals from each strategy's rules, then simulates day-by-day portfolio value, tracking cash and holdings separately and applying realistic trading costs (transaction fees and slippage) on every trade, rather than assuming free, instant execution.</p>
+    <p>Performance is judged on five standard metrics: total return, CAGR (smoothed annual growth), Sharpe ratio (return per unit of risk), max drawdown (worst peak-to-trough loss), and win rate.</p>
+  </section>
+
+  <section>
+    <div class="num">03. Initial Results</div>
+    <h2>Buy &amp; Hold won on every measure</h2>
+    <p>Tested on SPY from 2019 to 2025, a period that included the COVID crash and an unusually strong recovery, the baseline outperformed both active strategies:</p>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-label">Buy & Hold Return</div><div class="stat-value">157.46%</div></div>
+      <div class="stat"><div class="stat-label">Moving Average Return</div><div class="stat-value">74.56%</div></div>
+      <div class="stat"><div class="stat-label">RSI Return</div><div class="stat-value">51.70%</div></div>
+    </div>
+    <p>Both active strategies are inherently laggy: they only react after a trend has already shifted, which cost them dearly during the market's fastest recovery days. RSI mean-reversion additionally struggled because SPY, a broad index, rarely swings hard enough to hit classic "oversold/overbought" thresholds. That mismatch between strategy and asset became clearer when the same RSI strategy was re-tested on the far more volatile TSLA, where win rate improved modestly but still underperformed during TSLA's sustained uptrend.</p>
+  </section>
+
+  <section>
+    <div class="num">04. Parameter Sweep</div>
+    <h2>Tuning the moving average windows</h2>
+    <p>Rather than testing one window pair, an automated sweep tested eight short/long window combinations. The best performer by Sharpe ratio was a fast <b>10/100</b> window, notably outperforming the "textbook" 50/200 golden-cross setup, which produced both a weaker Sharpe ratio and the worst drawdown of any combination tested.</p>
+  </section>
+
+  <section>
+    <div class="num">05. Validation</div>
+    <h2>The finding that mattered most: overfitting</h2>
+    <p>Picking "the best" combo from a single sweep has a hidden flaw: it's chosen using the very data it's then judged against. To test whether the 10/100 combo reflected a real, repeatable edge, the data was split into a training period (2019 to 2022, used to select the combo) and a completely untouched test period (2022 to 2025).</p>
+
+    <div class="callout">
+      <div class="num">Result</div>
+      <p><b>Sharpe ratio dropped from 1.37 (training) to 0.84 (test)</b>, a roughly 39% decline on data the strategy had never seen. Total return roughly halved, from 70.11% to 29.08%.</p>
+    </div>
+
+    <p>This doesn't mean the strategy is worthless — a Sharpe of 0.84 out-of-sample is still reasonable. But the gap between "how good it looked" and "how good it actually was" is exactly the risk that naive parameter optimization creates, and exactly why walk-forward validation belongs in any real strategy development process, not just this project.</p>
+  </section>
+
+  <section>
+    <div class="num">06. Takeaways</div>
+    <h2>What this project demonstrates</h2>
+    <ul>
+      <li>Building a full backtesting pipeline from raw price data to performance metrics, including realistic trading costs</li>
+      <li>Comparing trend-following vs. mean-reversion approaches, and diagnosing <em>why</em> each underperformed rather than stopping at the numbers</li>
+      <li>Recognizing that strategy performance is asset- and period-dependent, not a universal property of the strategy itself</li>
+      <li>Applying train/test validation to catch overfitting — the same discipline used in machine learning model evaluation, applied here to strategy parameter selection</li>
+    </ul>
+    <p>An interactive dashboard exploring all three strategies, the full parameter sweep, and the validation results is available below.</p>
+    <a class="cta" href="project-backtestlab.html">→ View the interactive dashboard</a>
+  </section>
+
+  <footer>
+    Backtest Lab — quantitative strategy backtesting project. Source on <a href="https://github.com/demisomi" style="color:var(--teal)">GitHub</a>.
+  </footer>
+
+</div>
+</body>
+</html>

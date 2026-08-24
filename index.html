@@ -236,100 +236,8 @@
         <div class="projects-container">
             <span class="section-label">Projects</span>
             <h2 class="section-title" id="projects-title">Things I've built</h2>
-            
-            <div class="project-card fade-in">
-                <div class="project-info">
-                    <h3>PonziGuard — Real-Time Ponzi Scheme Detector</h3>
-                    <p class="project-company">Final-Year Thesis, Pan-Atlantic University</p>
-                    <p class="project-desc">
-                        Built a three-stage detection cascade around a fine-tuned XLM-RoBERTa 
-                        classifier that catches social-media Ponzi schemes across English, Nigerian 
-                        Pidgin, Hindi, and Indonesian in real time. Reached 97.96% held-out F1 at 
-                        28ms mean latency on CPU, with an explainable rule layer for regulators.
-                    </p>
-                    <div class="project-tech">
-                        <span>XLM-RoBERTa</span>
-                        <span>Hugging Face</span>
-                        <span>PyTorch</span>
-                        <span>Streamlit</span>
-                    </div>
-                    <a href="project-ponziguard.html" class="project-link">View Project Details →</a>
-                </div>
-                <div class="project-visual"></div>
-            </div>
 
-            <div class="project-card fade-in">
-                <div class="project-info">
-                    <h3>Strategy Backtester</h3>
-                    <p class="project-desc">
-                        A quantitative backtesting project testing three trading strategies against six years of real market data, 
-                        including a validation step most backtests skip.
-                    </p>
-                    <div class="project-tech">
-                        <span>yfinance</span>
-                        <span>FastAPI</span>
-                        <span>Chart.js</span>
-                        <span>Python</span>
-                    </div>
-                    <a href="project-backtestlab.html" class="project-link">View Project Details →</a>
-                </div>
-                <div class="project-visual"></div>
-            </div>
-            
-            <div class="project-card fade-in">
-                <div class="project-info">
-                    <h3>Developer Productivity Dashboard</h3>
-                    <p class="project-company">Prunedge Development Technologies</p>
-                    <p class="project-desc">
-                        Built an interactive visualization dashboard that pulled developer data from GitHub 
-                        and displayed metrics like commit frequency, PR turnaround time, and code review patterns. 
-                        Helped the team identify bottlenecks in their development workflow.
-                    </p>
-                    <div class="project-tech">
-                        <span>Kibana</span>
-                        <span>PostgreSQL</span>
-                        <span>Python</span>
-                    </div>
-                    <a href="project-prunedge.html" class="project-link">View Project Details →</a>
-                </div>
-                <div class="project-visual">📊</div>
-            </div>
-            
-            <div class="project-card fade-in">
-                <div class="project-info">
-                    <h3>Loan Eligibility Prediction Model</h3>
-                    <p class="project-company">Data Science Nigeria</p>
-                    <p class="project-desc">
-                        Developed a machine learning model to predict loan eligibility based on applicant data. 
-                        Handled data preprocessing, feature engineering, and model evaluation to achieve 
-                        reliable prediction accuracy.
-                    </p>
-                    <div class="project-tech">
-                        <span>Python</span>
-                        <span>Scikit-learn</span>
-                        <span>Pandas</span>
-                    </div>
-                </div>
-                <div class="project-visual">🤖</div>
-            </div>
-            
-            <div class="project-card fade-in">
-                <div class="project-info">
-                    <h3>Network Automation Scripts</h3>
-                    <p class="project-company">MTN Nigeria</p>
-                    <p class="project-desc">
-                        Created Python automation scripts to streamline routine network monitoring tasks. 
-                        The scripts collected traffic data, generated performance reports, and flagged 
-                        potential issues before they escalated.
-                    </p>
-                    <div class="project-tech">
-                        <span>Python</span>
-                        <span>Automation</span>
-                        <span>Network Analysis</span>
-                    </div>
-                </div>
-                <div class="project-visual">⚡</div>
-            </div>
+            <div id="projects-grid"></div>
         </div>
     </section>
 
@@ -468,6 +376,8 @@
     </footer>
 
     <!-- JavaScript -->
+    <script src="js/projects-data.js"></script>
+    <script src="js/projects-render.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!--
+  HOW TO USE THIS TEMPLATE:
+  1. Copy this file, rename it to "project-yourslug.html" (e.g. project-optimizer.html)
+  2. Replace every {{PLACEHOLDER}} below with your project's content
+  3. Delete any <section> you don't need (e.g. if there's no live demo)
+  4. Add one object to js/projects-data.js pointing "link" at your new filename
+  5. Commit and push — that's it
+-->
+
+<title>{{PROJECT_TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* This palette and type system matches your other project pages
+     (Backtest Lab, PonziGuard). Reuse it as-is for visual consistency
+     across the site — only change it deliberately, for all pages at once. */
+  :root {
+    --ink: #14213D;
+    --paper: #EDEFF2;
+    --paper-raised: #FFFFFF;
+    --teal: #3A7169;
+    --amber: #C98A2C;
+    --sage: #7C9885;
+    --crimson: #A8433D;
+    --line: #D7DBE2;
+    --ink-soft: #4A5573;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+  .hero { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--teal); font-weight: 500; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--amber); border-radius: 50%; display: inline-block; }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(30px, 4.5vw, 44px); line-height: 1.1; letter-spacing: -0.01em;
+  }
+  .hero-sub { margin-top: 18px; font-size: 17px; color: var(--ink-soft); max-width: 600px; }
+  .meta-row {
+    margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-soft);
+  }
+  .meta-row span b { color: var(--ink); }
+
+  section { padding: 44px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  .num {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal);
+    margin-bottom: 8px; letter-spacing: 0.04em;
+  }
+  h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 25px; margin-bottom: 16px; letter-spacing: -0.01em; }
+  p { margin-bottom: 14px; color: var(--ink-soft); font-size: 15.5px; }
+  p b { color: var(--ink); font-weight: 600; }
+  ul { margin: 14px 0 14px 20px; color: var(--ink-soft); font-size: 15.5px; }
+  li { margin-bottom: 8px; }
+
+  .stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); border-radius: 10px;
+    overflow: hidden; margin: 20px 0;
+  }
+  .stat { background: var(--paper-raised); padding: 18px; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 6px; }
+  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+
+  .callout {
+    background: var(--ink); color: var(--paper); border-radius: 12px; padding: 28px 32px; margin: 24px 0;
+  }
+  .callout .num { color: rgba(237,239,242,0.55); }
+  .callout p { color: rgba(237,239,242,0.85); margin-bottom: 0; font-size: 15px; }
+  .callout p b { color: #fff; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    background: var(--paper-raised); border: 1px solid var(--line);
+    padding: 2px 6px; border-radius: 4px; color: var(--crimson);
+  }
+
+  .cta {
+    display: inline-block; margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    color: var(--teal); text-decoration: none; border-bottom: 1px solid var(--teal);
+    padding-bottom: 2px;
+  }
+
+  footer { padding: 40px 0 80px; font-size: 13px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+
+  @media (max-width: 620px) {
+    .stat-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">{{EYEBROW — e.g. "Case Study" or "Project"}}</div>
+    <h1>{{PROJECT_TITLE}}</h1>
+    <p class="hero-sub">{{ONE OR TWO SENTENCE SUMMARY}}</p>
+    <div class="meta-row">
+      <span>Stack: <b>{{TECH_STACK}}</b></span>
+      <span>Data: <b>{{DATA_SOURCE, optional — delete this span if not applicable}}</b></span>
+      <span>Period: <b>{{TIMEFRAME, optional — delete if not applicable}}</b></span>
+    </div>
+  </div>
+
+  <section>
+    <div class="num">01. The Question / Problem</div>
+    <h2>{{WHAT PROBLEM WAS THIS SOLVING?}}</h2>
+    <p>{{Context: why this project, what prompted it.}}</p>
+    <p>{{What you set out to build or test.}}</p>
+  </section>
+
+  <section>
+    <div class="num">02. Method</div>
+    <h2>{{HOW YOU BUILT IT}}</h2>
+    <p>{{Key technical approach, tools used, and any notable design decisions.}}</p>
+  </section>
+
+  <section>
+    <div class="num">03. Results</div>
+    <h2>{{WHAT HAPPENED}}</h2>
+    <p>{{Summary of the outcome.}}</p>
+
+    <!-- Delete this stat-row block if there's nothing numeric to show -->
+    <div class="stat-row">
+      <div class="stat"><div class="stat-label">{{METRIC 1 NAME}}</div><div class="stat-value">{{VALUE}}</div></div>
+      <div class="stat"><div class="stat-label">{{METRIC 2 NAME}}</div><div class="stat-value">{{VALUE}}</div></div>
+      <div class="stat"><div class="stat-label">{{METRIC 3 NAME}}</div><div class="stat-value">{{VALUE}}</div></div>
+    </div>
+  </section>
+
+  <!-- Delete this whole section if there's no single standout finding -->
+  <section>
+    <div class="num">04. Key Finding</div>
+    <h2>{{THE MOST INTERESTING THING YOU LEARNED}}</h2>
+    <div class="callout">
+      <div class="num">Result</div>
+      <p><b>{{THE HEADLINE NUMBER OR INSIGHT}}</b>, {{brief context.}}</p>
+    </div>
+    <p>{{Why this matters, what it means for the approach.}}</p>
+  </section>
+
+  <section>
+    <div class="num">05. Takeaways</div>
+    <h2>What this project demonstrates</h2>
+    <ul>
+      <li>{{Skill or concept demonstrated 1}}</li>
+      <li>{{Skill or concept demonstrated 2}}</li>
+      <li>{{Skill or concept demonstrated 3}}</li>
+    </ul>
+    <!-- Delete this link if there's no live demo -->
+    <a class="cta" href="{{LINK TO LIVE DEMO/DASHBOARD, if any}}">→ {{View the live demo}}</a>
+  </section>
+
+  <footer>
+    {{PROJECT_TITLE}}. Source on <a href="https://github.com/demisomi" style="color:var(--teal)">GitHub</a>.
+  </footer>
+
+</div>
+</body>
+</html>
