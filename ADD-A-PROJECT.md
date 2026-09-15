@@ -1,41 +1,72 @@
 # Adding a new project to the portfolio
 
-Two things happen every time you add a project: a card appears on the
-homepage, and (optionally) a detail page exists for someone to click
-into. Here's the full process, in order.
+Two things happen when you add a project: a card appears on the homepage,
+and optionally a detail page exists for someone to click into.
 
 ## 1. Add the homepage card
 
 Open `js/projects-data.js`. Copy one existing object in the `PROJECTS`
-array (the `{ ... }` block), paste it in, and edit the fields:
+array, paste it where you want it to appear, and edit the fields:
 
 ```js
 {
   title: "Your Project Name",
-  company: "Where/why you built it",   // optional — delete this line if not applicable
-  desc: "One or two sentences describing what it does and why it matters.",
-  tech: ["Python", "FastAPI", "etc"],
-  link: "project-yourslug.html",        // optional — only if you're building a detail page (step 2)
-  visual: "🚀",                          // optional — an emoji, or delete for a blank panel
+  company: "Where you built it",        // optional
+  constraint: "The real limit that shaped the build.",
+  desc: "What it does, and why it was built the way it was.",
+  outcome: ["A measured result", "Another one"],   // optional
+  tech: ["Python", "FastAPI"],
+  link: "project-yourslug.html",        // optional, only with a detail page
+  visual: "🚀",                          // optional emoji
 },
 ```
 
-Save the file. That's the entire homepage change — no HTML editing,
-no touching `index.html`.
+Save. That's the whole homepage change. No HTML editing.
 
-## 2. (Optional) Build a detail page
+### Write the constraint line properly
 
-Skip this step if the project doesn't need its own page yet — the
-homepage card can exist without a `link`.
+`constraint` is the field that does the most work on this site. It says
+the build was designed against a real limit rather than a benchmark,
+which is what implementation and solutions-engineering roles screen for.
 
-1. Copy `project-template.html`, rename it to match the `link` you
-   used above (e.g. `project-optimizer.html`)
-2. Replace every `{{PLACEHOLDER}}` with your actual content
-3. Delete any section you don't need (the template includes comments
-   marking which ones are optional)
-4. Save it in the same folder as `index.html`
+Good: "No GPU budget, and a regulator can't act on a score without a reason."
+Bad:  "Needed to be fast and accurate."
 
-## 3. Push it live
+Only write what's true. An interviewer will open with this line and ask
+you to expand on it, so a constraint that overstates is worse than none.
+
+### Keep outcomes measured
+
+`outcome` renders as a monospace readout strip, so it should hold figures
+or facts, not adjectives. "97.96% held-out F1" belongs there. "Very
+accurate" does not. Omit the field entirely if you have no real numbers.
+
+## 2. Order matters
+
+The array reads top to bottom as strongest first. Most people only look
+at the first two records, so put your best work at the top and move it
+when something better ships.
+
+## 3. (Optional) Build a detail page
+
+Skip this if the project doesn't need a page yet — a card works fine
+without a `link`.
+
+1. Copy `project-template.html` and rename it to match the `link` you
+   used above
+2. Replace every `{{PLACEHOLDER}}` with real content
+3. Delete any section you don't need
+4. Save it beside `index.html`
+
+**Known issue:** the detail pages don't currently share the homepage's
+stylesheet. Each one inlines its own CSS and its own fonts, and they
+don't all use the same system — `project-ponziguard.html` and
+`project-prunedge.html` use one, `project-template.html` and
+`project-backtestlab.html` use another, and neither matches the
+homepage. Until that's unified into a shared `css/project-page.css`,
+a page built from the template will not look like the rest of the site.
+
+## 4. Ship it
 
 ```bash
 git add .
@@ -43,40 +74,9 @@ git commit -m "Add [project name] to portfolio"
 git push
 ```
 
-GitHub Pages rebuilds automatically — check `demisomi.github.io` in
-a minute or two.
+Netlify rebuilds automatically from `main`. Check
+`demilade-somide.netlify.app` in a minute or two.
 
-## One-time setup (only needed once, not per-project)
-
-`index.html` needs to be pointed at the new data-driven card system.
-In the `<section class="projects" id="projects">` block, replace the
-five hand-written `<div class="project-card fade-in">...</div>` blocks
-with a single empty container:
-
-```html
-<div class="projects-container">
-  <span class="section-label">Projects</span>
-  <h2 class="section-title" id="projects-title">Things I've built</h2>
-  <div id="projects-grid"></div>
-</div>
-```
-
-Then, just before the closing `</body>` tag, add these two script tags
-**before** the existing `<script src="js/main.js"></script>` line:
-
-```html
-<script src="js/projects-data.js"></script>
-<script src="js/projects-render.js"></script>
-<script src="js/main.js"></script>
-```
-
-Upload `js/projects-data.js` and `js/projects-render.js` into your
-existing `js/` folder alongside `main.js`.
-
-**One thing to check afterward:** if your existing `js/main.js` uses a
-scroll-triggered fade-in effect on page load (the `.fade-in` class
-suggests it might), confirm the newly-rendered cards still fade in
-correctly when you scroll to them. If they don't, it likely means
-`main.js` sets up its animation observer once on page load, before the
-cards exist — let me know and I can adjust `projects-render.js` to
-re-trigger it.
+For anything larger than a new card, work on a branch instead —
+Netlify builds a deploy preview per branch, so you can see the change
+on the real stack before it reaches the live site.
