@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary Meta Tags -->
-    <title>PonziGuard — Real-Time Ponzi Scheme Detector | Demilade Somide</title>
-    <meta name="title" content="PonziGuard — Real-Time, Multilingual Ponzi Scheme Detector | Demilade Somide">
+    <title>PonziGuard: Real-Time Ponzi Scheme Detector | Demilade Somide</title>
+    <meta name="title" content="PonziGuard, Real-Time, Multilingual Ponzi Scheme Detector | Demilade Somide">
     <meta name="description" content="A case study on PonziGuard: a fine-tuned XLM-RoBERTa cascade that detects social-media Ponzi schemes in real time across English, Pidgin, Hindi and Indonesian, built as a final-year thesis project.">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="article">
-    <meta property="og:title" content="PonziGuard — Real-Time, Multilingual Ponzi Scheme Detector">
+    <meta property="og:title" content="PonziGuard, Real-Time, Multilingual Ponzi Scheme Detector">
     <meta property="og:description" content="A fine-tuned transformer cascade that detects social-media Ponzi schemes in real time, in multiple languages, with 97.96% held-out F1.">
 
     <!-- Favicon -->
@@ -20,24 +20,14 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/project-page.css">
     <style>
-        :root {
-            --warm-coral: #e07a5f;
-            --warm-peach: #f2cc8f;
-            --cool-slate: #3d5a80;
-            --cool-light: #98c1d9;
-            --cool-ice: #e0fbfc;
-            --deep-navy: #1d3557;
-            --off-white: #faf9f7;
-            --text-dark: #293241;
-            --text-muted: #5c6b7a;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Outfit', sans-serif; background: var(--off-white); color: var(--text-dark); line-height: 1.7; }
+        body { font-family: var(--body); background: var(--off-white); color: var(--text-dark); line-height: 1.7; }
         ::selection { background: var(--warm-coral); color: white; }
         a { color: var(--cool-slate); text-decoration: none; transition: color 0.3s ease; }
         a:hover { color: var(--warm-coral); }
@@ -47,31 +37,31 @@
             padding: 1.25rem 3rem;
             display: flex; justify-content: space-between; align-items: center;
             z-index: 100;
-            background: rgba(250, 249, 247, 0.95);
+            background: color-mix(in srgb, var(--ground) 92%, transparent);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(61, 90, 128, 0.1);
+            border-bottom: 1px solid var(--line);
         }
         .nav-back { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-weight: 500; transition: color 0.3s ease; }
         .nav-back:hover { color: var(--warm-coral); }
         .nav-back svg { width: 20px; height: 20px; }
-        .logo { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 1.4rem; color: var(--deep-navy); }
+        .logo { font-family: var(--display); font-weight: 600; font-size: 1.4rem; color: var(--deep-navy); }
 
         .project-hero {
             padding: 8rem 3rem 4rem;
-            background: linear-gradient(135deg, var(--deep-navy) 0%, var(--cool-slate) 100%);
+            background: linear-gradient(135deg, var(--hero-from) 0%, var(--hero-to) 100%);
             color: white;
         }
         .project-hero-content { max-width: 900px; margin: 0 auto; }
         .project-meta { display: flex; gap: 2rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--cool-light); }
         .meta-item svg { width: 18px; height: 18px; opacity: 0.8; }
-        .project-hero h1 { font-family: 'Source Serif 4', serif; font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 600; line-height: 1.2; margin-bottom: 1.5rem; }
+        .project-hero h1 { font-family: var(--display); font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 600; line-height: 1.2; margin-bottom: 1.5rem; }
         .project-hero-desc { font-size: 1.2rem; color: rgba(255, 255, 255, 0.8); max-width: 700px; line-height: 1.7; }
         .tech-stack { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
         .tech-tag { padding: 0.5rem 1rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; font-size: 0.85rem; color: white; }
 
         .hero-links { display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
-        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 1.75rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 500; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 1.75rem; font-family: var(--body); font-size: 0.95rem; font-weight: 500; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; }
         .btn-primary { background: var(--warm-coral); color: white; }
         .btn-primary:hover { background: #c9684f; color: white; transform: translateY(-2px); }
         .btn-secondary { background: transparent; color: white; border: 2px solid rgba(255, 255, 255, 0.3); }
@@ -81,28 +71,28 @@
         .content-section { margin-bottom: 4rem; }
         .content-section:last-child { margin-bottom: 0; }
         .section-label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warm-coral); margin-bottom: 0.75rem; }
-        .section-title { font-family: 'Source Serif 4', serif; font-size: 1.8rem; font-weight: 600; color: var(--deep-navy); margin-bottom: 1.5rem; }
+        .section-title { font-family: var(--display); font-size: 1.8rem; font-weight: 600; color: var(--deep-navy); margin-bottom: 1.5rem; }
         .content-section p { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.25rem; }
         .content-section p:last-child { margin-bottom: 0; }
 
-        .highlight-box { background: linear-gradient(135deg, var(--cool-ice) 0%, white 100%); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; border-left: 4px solid var(--warm-coral); }
-        .highlight-box h4 { font-family: 'Source Serif 4', serif; font-size: 1.2rem; color: var(--deep-navy); margin-bottom: 1rem; }
+        .highlight-box { background: linear-gradient(135deg, var(--surface-sunk) 0%, var(--surface) 100%); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; border-left: 4px solid var(--warm-coral); }
+        .highlight-box h4 { font-family: var(--display); font-size: 1.2rem; color: var(--deep-navy); margin-bottom: 1rem; }
         .highlight-box p { margin-bottom: 0; }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
-        .metric-card { background: white; border: 1px solid rgba(61, 90, 128, 0.1); border-radius: 12px; padding: 1.25rem; text-align: center; }
-        .metric-value { font-family: 'Source Serif 4', serif; font-size: 1.9rem; font-weight: 600; color: var(--deep-navy); }
+        .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem; text-align: center; }
+        .metric-value { font-family: var(--display); font-size: 1.9rem; font-weight: 600; color: var(--deep-navy); }
         .metric-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
 
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-        .feature-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(61, 90, 128, 0.1); border-left: 4px solid var(--cool-slate); }
+        .feature-card { background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--line); border-left: 4px solid var(--cool-slate); }
         .feature-card h4 { font-size: 1rem; font-weight: 600; color: var(--deep-navy); margin-bottom: 0.5rem; }
         .feature-card p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1rem; }
         .feature-card a { font-size: 0.9rem; font-weight: 600; color: var(--warm-coral); }
         .feature-card a:hover { color: var(--cool-slate); }
 
         .tech-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-        .tech-detail-card { background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(61, 90, 128, 0.1); text-align: center; }
+        .tech-detail-card { background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--line); text-align: center; }
         .tech-detail-card .tech-icon { font-size: 2.5rem; margin-bottom: 1rem; }
         .tech-detail-card h4 { font-size: 1rem; font-weight: 600; color: var(--deep-navy); margin-bottom: 0.5rem; }
         .tech-detail-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0; }
@@ -112,10 +102,10 @@
         .learnings-list li::before { content: '✓'; position: absolute; left: 0; color: var(--warm-coral); font-weight: 600; }
 
         .code-block { background: var(--deep-navy); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
-        .code-block code { font-family: 'Fira Code', monospace; font-size: 0.9rem; color: var(--cool-light); line-height: 1.8; }
+        .code-block code { font-family: var(--mono); font-size: 0.9rem; color: var(--cool-light); line-height: 1.8; }
 
         .project-cta { background: var(--deep-navy); padding: 4rem 3rem; text-align: center; color: white; }
-        .project-cta h2 { font-family: 'Source Serif 4', serif; font-size: 2rem; margin-bottom: 1rem; }
+        .project-cta h2 { font-family: var(--display); font-size: 2rem; margin-bottom: 1rem; }
         .project-cta p { color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem; font-size: 1.1rem; }
         .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
@@ -158,7 +148,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    2025 — 2026
+                    2025–2026
                 </div>
                 <div class="meta-item">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -172,7 +162,7 @@
             <p class="project-hero-desc">
                 A three-stage detection cascade that fine-tunes a multilingual transformer to
                 catch social-media Ponzi schemes in real time, across English, Nigerian Pidgin,
-                Hindi and Indonesian — with an explainable rule layer regulators can actually audit.
+                Hindi and Indonesian, with an explainable rule layer regulators can actually audit.
             </p>
 
             <div class="tech-stack">
@@ -217,7 +207,7 @@
                     A detector needed to be accurate enough to trust, fast enough to run at
                     social-media scale, generalizable across languages regulators actually see
                     in the field, and explainable enough that a non-technical investigator could
-                    understand exactly why a message was flagged — not just trust a black-box score.
+                    understand exactly why a message was flagged, not just trust a black-box score.
                 </p>
             </div>
         </section>
@@ -234,8 +224,7 @@
                 investment-context filter (Stage 2.5) prevents the system from flagging phishing
                 or lottery scams as Ponzi schemes specifically. And a weighted, 12-category rule
                 engine (Stage 3) turns the final decision into something a regulator can audit
-                line by line, with five deployment thresholds tuned for different use cases —
-                from exhaustive regulator screening to court-grade certainty.
+                line by line, with five deployment thresholds tuned for different use cases, from exhaustive regulator screening to court-grade certainty.
             </p>
 
             <div class="metrics-grid">
@@ -256,25 +245,25 @@
                 three linked front ends to show that: a quick consumer check, an analyst's
                 single-case deep dive, and a regulator's caseload-wide screening view. These
                 are UI/UX prototypes built around the model's actual reported outputs and
-                metrics — not wired up to a live inference backend — designed to show how one
+                metrics, not wired up to a live inference backend, designed to show how one
                 detection system could serve three very different audiences.
             </p>
 
             <div class="features-grid">
                 <div class="feature-card">
-                    <img src="assets/images/ponziguard-consumer.png" alt="PonziGuard consumer check interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid rgba(61,90,128,0.15);">
+                    <img src="assets/images/ponziguard-consumer.png" alt="PonziGuard consumer check interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid var(--line);">
                     <h4>📱 Consumer Check</h4>
                     <p>Paste a message you received, get a plain-language verdict in seconds. Built mobile-first, no jargon.</p>
                     <a href="ponziguard/consumer.html" target="_blank" rel="noopener noreferrer">Open consumer view →</a>
                 </div>
                 <div class="feature-card">
-                    <img src="assets/images/ponziguard-analyst.png" alt="PonziGuard analyst workbench interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid rgba(61,90,128,0.15);">
+                    <img src="assets/images/ponziguard-analyst.png" alt="PonziGuard analyst workbench interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid var(--line);">
                     <h4>🔎 Analyst Workbench</h4>
                     <p>A single flagged case annotated line by line every rule match tied to a live-tallying evidence docket.</p>
                     <a href="ponziguard/analyst.html" target="_blank" rel="noopener noreferrer">Open analyst view →</a>
                 </div>
                 <div class="feature-card">
-                    <img src="assets/images/ponziguard-regulator.png" alt="PonziGuard regulator console interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid rgba(61,90,128,0.15);">
+                    <img src="assets/images/ponziguard-regulator.png" alt="PonziGuard regulator console interface" style="width:100%; border-radius:8px; margin-bottom:1rem; border:1px solid var(--line);">
                     <h4>🏛️ Regulator Console</h4>
                     <p>Caseload-wide screening with a live threshold switcher, showing the real precision/recall trade-off at each cutoff.</p>
                     <a href="ponziguard/regulator.html" target="_blank" rel="noopener noreferrer">Open regulator view →</a>
@@ -376,7 +365,7 @@ split = "70 / 10 / 20, stratified"
                 <li>
                     <strong>Explainability is a design constraint, not a bonus feature:</strong>
                     building the weighted rule engine as a parallel, auditable layer rather than
-                    trying to explain the transformer's internals — was what made the system usable
+                    trying to explain the transformer's internals, was what made the system usable
                     for a non-technical regulator.
                 </li>
                 <li>
@@ -402,7 +391,7 @@ split = "70 / 10 / 20, stratified"
 
     <!-- Footer -->
     <footer>
-        <p>© 2025 Demilade Somide — Lagos, Nigeria</p>
+        <p>© 2025 Demilade Somide, Lagos, Nigeria</p>
     </footer>
 
 </body>

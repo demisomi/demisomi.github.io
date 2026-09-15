@@ -1,0 +1,116 @@
+/* ===========================================================================
+   css/project-page.css — shared design layer for the project detail pages
+   ---------------------------------------------------------------------------
+   Load AFTER css/styles.css and BEFORE the page's own <style> block:
+
+     <link rel="stylesheet" href="css/styles.css">
+     <link rel="stylesheet" href="css/project-page.css">
+     <style> ...this page's own layout... </style>
+
+   Why this file exists
+   --------------------
+   The detail pages were each written with their own inlined palette, and
+   two different ones at that: project-template.html and
+   project-backtestlab.html used an ink/paper/teal/amber set, while
+   project-ponziguard.html, project-prunedge.html and 404.html used a
+   coral/navy set. Neither matched the homepage.
+
+   Rather than rewrite every bespoke layout rule on those pages (the
+   exhibit cards, the docket columns, the charts — all of which work),
+   this file re-points BOTH old palettes at the homepage's tokens from
+   css/styles.css. The pages keep their layouts and inherit the site's
+   colour and type.
+
+   So: css/styles.css is the single source of truth for the palette. Change
+   a colour there and every page follows. Nothing here defines a new value.
+
+   New pages should use the tokens directly (--ink, --ground, --signal …)
+   and ignore the aliases below, which exist only for the older pages.
+   =========================================================================== */
+
+:root {
+    /* ---- palette A: template + backtestlab (ink / paper / teal / amber) --- */
+    /* --ink, --ink-soft and --line already carry the right values from
+       css/styles.css, so only the names that differ are re-pointed here. */
+    --paper:        var(--ground);
+    --paper-raised: var(--surface);
+    --teal:         var(--signal);
+    --amber:        var(--readout);
+    --sage:         var(--signal);
+    --crimson:      var(--critical);
+
+    /* ---- palette B: ponziguard + prunedge + 404 (coral / navy) ----------- */
+    --off-white:    var(--ground);
+    --text-dark:    var(--ink);
+    --text-muted:   var(--muted);
+    --deep-navy:    var(--ink);
+    --cool-slate:   var(--signal);
+    --cool-light:   var(--on-dark-soft);
+    --cool-ice:     var(--surface-sunk);
+    --warm-coral:   var(--readout);
+    --warm-peach:   var(--readout);
+
+    /* ---- values the old palettes needed that styles.css doesn't define --- */
+    --critical:     #a8433d;
+    --on-dark-soft: #9fb3ab;
+
+    /* The project hero is a deliberately dark panel in BOTH themes, so these
+       two are fixed values rather than tokens that flip. Aliasing them to
+       --ink would turn the hero near-white in dark mode and strand the
+       white text on it. */
+    --hero-from:    #10201a;
+    --hero-to:      #12503a;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --critical:     #e08079;
+        --on-dark-soft: #9fb3ab;
+    }
+}
+
+:root[data-theme="dark"] {
+    --critical:     #e08079;
+    --on-dark-soft: #9fb3ab;
+}
+
+/* ---------------------------------------------------------------------------
+   Shared detail-page furniture
+   --------------------------------------------------------------------------- */
+
+/* Back-to-home link in the detail page nav */
+.nav-back {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.nav-back:hover { color: var(--signal); }
+
+/* Anything set on a dark hero panel keeps legible contrast in both themes */
+.project-hero,
+.project-hero h1,
+.project-hero .project-hero-desc {
+    color: #f2f6f4;
+}
+
+.project-hero .project-hero-desc { color: var(--on-dark-soft); }
+
+/* The detail pages predate the homepage's focus styles */
+.wrap a:focus-visible,
+.project-hero a:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

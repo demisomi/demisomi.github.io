@@ -408,7 +408,13 @@ nav {
 .btn-ghost:hover { color: var(--signal); }
 
 /* -------------------------------------------------------- section shells */
-section {
+.hero,
+.approach,
+.projects,
+.experience,
+.skills,
+.education,
+.contact {
     padding: var(--section-y) var(--gutter);
 }
 

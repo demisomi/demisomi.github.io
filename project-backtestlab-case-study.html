@@ -5,24 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Case Study: Backtest Lab, Does Trend-Following Beat Buy &amp; Hold?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #14213D;
-    --paper: #EDEFF2;
-    --paper-raised: #FFFFFF;
-    --teal: #3A7169;
-    --amber: #C98A2C;
-    --sage: #7C9885;
-    --crimson: #A8433D;
-    --line: #D7DBE2;
-    --ink-soft: #4A5573;
-  }
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/project-page.css">
+    <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--paper);
     color: var(--ink);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--body);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
@@ -30,30 +21,30 @@
 
   .hero { padding: 72px 0 48px; border-bottom: 1px solid var(--line); }
   .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--mono);
     font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--teal); font-weight: 500; margin-bottom: 18px;
     display: flex; align-items: center; gap: 10px;
   }
   .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--amber); border-radius: 50%; display: inline-block; }
   h1 {
-    font-family: 'Fraunces', serif; font-weight: 600;
+    font-family: var(--display); font-weight: 600;
     font-size: clamp(30px, 4.5vw, 44px); line-height: 1.1; letter-spacing: -0.01em;
   }
   .hero-sub { margin-top: 18px; font-size: 17px; color: var(--ink-soft); max-width: 600px; }
   .meta-row {
     margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap;
-    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-soft);
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft);
   }
   .meta-row span b { color: var(--ink); }
 
   section { padding: 44px 0; border-bottom: 1px solid var(--line); }
   section:last-of-type { border-bottom: none; }
   .num {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal);
+    font-family: var(--mono); font-size: 12px; color: var(--teal);
     margin-bottom: 8px; letter-spacing: 0.04em;
   }
-  h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 25px; margin-bottom: 16px; letter-spacing: -0.01em; }
+  h2 { font-family: var(--display); font-weight: 600; font-size: 25px; margin-bottom: 16px; letter-spacing: -0.01em; }
   p { margin-bottom: 14px; color: var(--ink-soft); font-size: 15.5px; }
   p b { color: var(--ink); font-weight: 600; }
   ul { margin: 14px 0 14px 20px; color: var(--ink-soft); font-size: 15.5px; }
@@ -66,29 +57,29 @@
   }
   .stat { background: var(--paper-raised); padding: 18px; }
   .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 6px; }
-  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+  .stat-value { font-family: var(--mono); font-size: 20px; font-weight: 700; }
 
   .callout {
     background: var(--ink); color: var(--paper); border-radius: 12px; padding: 28px 32px; margin: 24px 0;
   }
-  .callout .num { color: rgba(237,239,242,0.55); }
-  .callout p { color: rgba(237,239,242,0.85); margin-bottom: 0; font-size: 15px; }
+  .callout .num { color: color-mix(in srgb, var(--on-dark-soft) 55%, transparent); }
+  .callout p { color: color-mix(in srgb, var(--on-dark-soft) 85%, transparent); margin-bottom: 0; font-size: 15px; }
   .callout p b { color: #fff; }
 
   code {
-    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    font-family: var(--mono); font-size: 13.5px;
     background: var(--paper-raised); border: 1px solid var(--line);
     padding: 2px 6px; border-radius: 4px; color: var(--crimson);
   }
 
   .cta {
     display: inline-block; margin-top: 6px;
-    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    font-family: var(--mono); font-size: 13.5px;
     color: var(--teal); text-decoration: none; border-bottom: 1px solid var(--teal);
     padding-bottom: 2px;
   }
 
-  footer { padding: 40px 0 80px; font-size: 13px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; }
+  footer { padding: 40px 0 80px; font-size: 13px; color: var(--ink-soft); font-family: var(--mono); }
 
   @media (max-width: 620px) {
     .stat-row { grid-template-columns: 1fr; }
@@ -151,7 +142,7 @@
       <p><b>Sharpe ratio dropped from 1.37 (training) to 0.84 (test)</b>, a roughly 39% decline on data the strategy had never seen. Total return roughly halved, from 70.11% to 29.08%.</p>
     </div>
 
-    <p>This doesn't mean the strategy is worthless — a Sharpe of 0.84 out-of-sample is still reasonable. But the gap between "how good it looked" and "how good it actually was" is exactly the risk that naive parameter optimization creates, and exactly why walk-forward validation belongs in any real strategy development process, not just this project.</p>
+    <p>This doesn't mean the strategy is worthless, a Sharpe of 0.84 out-of-sample is still reasonable. But the gap between "how good it looked" and "how good it actually was" is exactly the risk that naive parameter optimization creates, and exactly why walk-forward validation belongs in any real strategy development process, not just this project.</p>
   </section>
 
   <section>
@@ -161,14 +152,14 @@
       <li>Building a full backtesting pipeline from raw price data to performance metrics, including realistic trading costs</li>
       <li>Comparing trend-following vs. mean-reversion approaches, and diagnosing <em>why</em> each underperformed rather than stopping at the numbers</li>
       <li>Recognizing that strategy performance is asset- and period-dependent, not a universal property of the strategy itself</li>
-      <li>Applying train/test validation to catch overfitting — the same discipline used in machine learning model evaluation, applied here to strategy parameter selection</li>
+      <li>Applying train/test validation to catch overfitting, the same discipline used in machine learning model evaluation, applied here to strategy parameter selection</li>
     </ul>
     <p>An interactive dashboard exploring all three strategies, the full parameter sweep, and the validation results is available below.</p>
     <a class="cta" href="project-backtestlab.html">→ View the interactive dashboard</a>
   </section>
 
   <footer>
-    Backtest Lab — quantitative strategy backtesting project. Source on <a href="https://github.com/demisomi" style="color:var(--teal)">GitHub</a>.
+    Backtest Lab, quantitative strategy backtesting project. Source on <a href="https://github.com/demisomi" style="color:var(--teal)">GitHub</a>.
   </footer>
 
 </div>
