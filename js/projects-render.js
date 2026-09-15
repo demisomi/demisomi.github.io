@@ -2,22 +2,30 @@
   js/projects-render.js
 
   Reads the PROJECTS array from js/projects-data.js and builds the
-  project cards on the homepage. You should not need to edit this
+  project records on the homepage. You should not need to edit this
   file to add a project — edit js/projects-data.js instead.
 
-  The markup generated here matches the original hand-written cards
-  exactly (same class names: project-card, project-info, project-desc,
-  project-tech, project-link, project-visual) so css/styles.css
-  continues to style everything without any changes.
+  Class names used here are styled in css/styles.css:
+    project-card, project-info, project-company, project-constraint,
+    project-desc, project-outcome, project-tech, project-link,
+    project-visual
 
   IMPORTANT: this runs immediately, not on a DOMContentLoaded listener.
   That's deliberate — this script tag sits near the bottom of the page,
   after the #projects-grid container already exists in the HTML, and
   BEFORE js/main.js runs. main.js sets up a scroll fade-in effect by
   scanning for .fade-in elements once, synchronously, when it loads —
-  so the project cards must already exist in the DOM before main.js
+  so the project records must already exist in the DOM before main.js
   runs, or they'll never get the fade-in animation wired up.
 */
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 function renderProjects() {
   const container = document.getElementById("projects-grid");
@@ -25,30 +33,44 @@ function renderProjects() {
 
   container.innerHTML = PROJECTS.map((p) => {
     const companyHtml = p.company
-      ? `<p class="project-company">${p.company}</p>`
+      ? `<p class="project-company">${escapeHtml(p.company)}</p>`
       : "";
 
-    const techHtml = p.tech
-      .map((t) => `<span>${t}</span>`)
-      .join("");
+    const constraintHtml = p.constraint
+      ? `<p class="project-constraint">
+           <span class="constraint-label">Constraint</span>
+           ${escapeHtml(p.constraint)}
+         </p>`
+      : "";
+
+    const outcomeHtml =
+      p.outcome && p.outcome.length
+        ? `<ul class="project-outcome">${p.outcome
+            .map((o) => `<li>${escapeHtml(o)}</li>`)
+            .join("")}</ul>`
+        : "";
+
+    const techHtml = p.tech.map((t) => `<span>${escapeHtml(t)}</span>`).join("");
 
     const linkHtml = p.link
-      ? `<a href="${p.link}" class="project-link">View Project Details →</a>`
+      ? `<a href="${escapeHtml(p.link)}" class="project-link">Read the build notes →</a>`
       : "";
 
-    const visualHtml = p.visual || "";
+    const visualHtml = p.visual ? escapeHtml(p.visual) : "";
 
     return `
-      <div class="project-card fade-in">
+      <article class="project-card fade-in">
         <div class="project-info">
-          <h3>${p.title}</h3>
+          <h3>${escapeHtml(p.title)}</h3>
           ${companyHtml}
-          <p class="project-desc">${p.desc}</p>
+          ${constraintHtml}
+          <p class="project-desc">${escapeHtml(p.desc)}</p>
+          ${outcomeHtml}
           <div class="project-tech">${techHtml}</div>
           ${linkHtml}
         </div>
-        <div class="project-visual">${visualHtml}</div>
-      </div>
+        <div class="project-visual" aria-hidden="true">${visualHtml}</div>
+      </article>
     `;
   }).join("");
 }
