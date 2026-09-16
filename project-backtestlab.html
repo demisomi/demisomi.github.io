@@ -113,7 +113,7 @@
     transition: all 0.15s ease;
   }
   .pill:hover { color: var(--ink); }
-  .pill.active { background: var(--ink); color: var(--paper); }
+  .pill.active { background: var(--panel-dark); color: var(--on-panel); }
 
   .text-input {
     font-family: var(--mono);
@@ -135,7 +135,7 @@
     border-radius: 8px;
     border: none;
     background: var(--amber);
-    color: #fff;
+    color: var(--on-accent);
     cursor: pointer;
     transition: opacity 0.15s ease;
   }
@@ -214,7 +214,7 @@
     padding: 2px 7px;
     border-radius: 4px;
     background: var(--amber);
-    color: #fff;
+    color: var(--on-accent);
     margin-left: 8px;
     font-weight: 700;
     letter-spacing: 0.03em;
@@ -222,8 +222,8 @@
 
   /* ---------- FINDING BOX (signature element) ---------- */
   .finding {
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--panel-dark);
+    color: var(--on-panel);
     border-radius: 14px;
     padding: 40px;
     position: relative;
@@ -243,7 +243,7 @@
     font-size: 11px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--on-dark-soft) 5%, transparent);
+    color: color-mix(in srgb, var(--on-dark-soft) 50%, transparent);
     margin-bottom: 10px;
   }
   .finding-sharpe {
@@ -252,9 +252,9 @@
     font-weight: 700;
     line-height: 1;
   }
-  .finding-col.train .finding-sharpe { color: var(--sage); }
-  .finding-col.test .finding-sharpe { color: var(--amber); }
-  .finding-detail { margin-top: 10px; font-size: 13px; color: color-mix(in srgb, var(--on-dark-soft) 7%, transparent); font-family: var(--mono); }
+  .finding-col.train .finding-sharpe { color: var(--signal-on-panel); }
+  .finding-col.test .finding-sharpe { color: var(--readout-on-panel); }
+  .finding-detail { margin-top: 10px; font-size: 13px; color: color-mix(in srgb, var(--on-dark-soft) 70%, transparent); font-family: var(--mono); }
   .finding-arrow {
     position: absolute;
     top: 50%;

@@ -60,18 +60,37 @@
        white text on it. */
     --hero-from:    #10201a;
     --hero-to:      #12503a;
+
+    /* Dark panels (CTA bands, code blocks, footers, callouts) that carry
+       light text. Like the hero, these must stay dark in BOTH themes, so
+       they get fixed values rather than tokens that flip. */
+    --panel-dark:      #14181b;
+    --on-panel:        #f2f6f4;
+    --on-panel-soft:   #9fb3ab;
+
+    /* Text sitting ON an accent fill. White works on the light theme's
+       deep accents but fails on the dark theme's brighter ones, so this
+       flips instead of the fill. */
+    --on-accent:       #ffffff;
+
+    /* Accents printed ON a fixed dark panel need the bright variants in
+       BOTH themes: the light theme's deep green is unreadable on #14181b. */
+    --signal-on-panel:  #35c08a;
+    --readout-on-panel: #d9a441;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         --critical:     #e08079;
         --on-dark-soft: #9fb3ab;
+        --on-accent:    #14181b;
     }
 }
 
 :root[data-theme="dark"] {
     --critical:     #e08079;
     --on-dark-soft: #9fb3ab;
+    --on-accent:    #14181b;
 }
 
 /* ---------------------------------------------------------------------------

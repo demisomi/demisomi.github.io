@@ -28,7 +28,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: var(--body); background: var(--off-white); color: var(--text-dark); line-height: 1.7; }
-        ::selection { background: var(--warm-coral); color: white; }
+        ::selection { background: var(--warm-coral); color: var(--on-accent); }
         a { color: var(--cool-slate); text-decoration: none; transition: color 0.3s ease; }
         a:hover { color: var(--warm-coral); }
 
@@ -62,7 +62,7 @@
 
         .hero-links { display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
         .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 1.75rem; font-family: var(--body); font-size: 0.95rem; font-weight: 500; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; }
-        .btn-primary { background: var(--warm-coral); color: white; }
+        .btn-primary { background: var(--warm-coral); color: var(--on-accent); }
         .btn-primary:hover { background: #c9684f; color: white; transform: translateY(-2px); }
         .btn-secondary { background: transparent; color: white; border: 2px solid rgba(255, 255, 255, 0.3); }
         .btn-secondary:hover { border-color: white; color: white; transform: translateY(-2px); }
@@ -101,15 +101,15 @@
         .learnings-list li { position: relative; padding-left: 2rem; margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
         .learnings-list li::before { content: '✓'; position: absolute; left: 0; color: var(--warm-coral); font-weight: 600; }
 
-        .code-block { background: var(--deep-navy); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
+        .code-block { background: var(--panel-dark); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; }
         .code-block code { font-family: var(--mono); font-size: 0.9rem; color: var(--cool-light); line-height: 1.8; }
 
-        .project-cta { background: var(--deep-navy); padding: 4rem 3rem; text-align: center; color: white; }
+        .project-cta { background: var(--panel-dark); padding: 4rem 3rem; text-align: center; color: white; }
         .project-cta h2 { font-family: var(--display); font-size: 2rem; margin-bottom: 1rem; }
         .project-cta p { color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem; font-size: 1.1rem; }
         .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-        footer { background: var(--deep-navy); color: rgba(255, 255, 255, 0.4); text-align: center; padding: 2rem 3rem; font-size: 0.85rem; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        footer { background: var(--panel-dark); color: rgba(255, 255, 255, 0.4); text-align: center; padding: 2rem 3rem; font-size: 0.85rem; border-top: 1px solid rgba(255, 255, 255, 0.05); }
 
         @media (max-width: 768px) {
             nav { padding: 1rem 1.5rem; }
